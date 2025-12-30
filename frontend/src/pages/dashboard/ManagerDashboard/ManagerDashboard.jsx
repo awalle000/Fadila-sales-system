@@ -34,8 +34,11 @@ const ManagerDashboard = () => {
       setMySales(sales.slice(0, 5)); // Show only last 5 sales
       setLowStockProducts(lowStock);
     } catch (error) {
-      toast.error('Failed to load dashboard data');
-      console.error('Dashboard error:', error);
+      // Only show error for actual server errors, not empty data
+      if (error.response && error.response.status !== 404) {
+        toast.error('Failed to load dashboard data');
+        console.error('Dashboard error:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,10 +72,10 @@ const ManagerDashboard = () => {
         <div className="stat-card profit">
           <div className="stat-icon">💰</div>
           <div className="stat-content">
-            <h3>Today's Profit</h3>
-            <div className="stat-value">{dashboardData?.today?.profit || 'GH₵ 0.00'}</div>
+            <h3>Today's Revenue</h3>
+            <div className="stat-value">{dashboardData?.today?.revenue || 'GH₵ 0.00'}</div>
             <div className="stat-meta">
-              <span>Net profit for today</span>
+              <span>Total revenue for today</span>
             </div>
           </div>
         </div>
@@ -127,7 +130,6 @@ const ManagerDashboard = () => {
                 <th>Product</th>
                 <th>Quantity</th>
                 <th>Total Amount</th>
-                <th>Profit</th>
               </tr>
             </thead>
             <tbody>
@@ -138,12 +140,13 @@ const ManagerDashboard = () => {
                     <td className="product-name">{sale.productName}</td>
                     <td>{sale.quantitySold}</td>
                     <td className="revenue">GH₵ {sale.totalAmount?.toFixed(2)}</td>
-                    <td className="profit">GH₵ {sale.profit?.toFixed(2)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="no-data">No sales recorded yet</td>
+                  <td colSpan="4" className="no-data">
+                    📝 No sales recorded yet. Make your first sale to get started!
+                  </td>
                 </tr>
               )}
             </tbody>

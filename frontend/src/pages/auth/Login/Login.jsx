@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import Button from '../../../components/common/Button/Button';
@@ -9,21 +9,39 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'ceo') {
+        navigate('/dashboard', { replace: true });
+      } else if (user.role === 'manager') {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const user = await login(email, password);
+      const userData = await login(email, password);
       
-      // Redirect based on role
-      if (user.role === 'ceo') {
-        navigate('/ceo-dashboard');
-      } else if (user.role === 'manager') {
-        navigate('/manager-dashboard');
+      // Navigate based on role
+      if (userData.role === 'ceo') {
+        navigate('/dashboard', { replace: true });
+      } else if (userData.role === 'manager') {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -56,6 +74,7 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
             required
+            autoComplete="email"
           />
 
           <Input
@@ -66,6 +85,7 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
             required
+            autoComplete="current-password"
           />
 
           <Button
@@ -74,8 +94,9 @@ const Login = () => {
             fullWidth
             loading={loading}
             size="large"
+            disabled={!email || !password}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
 
@@ -83,6 +104,7 @@ const Login = () => {
           <div className="demo-credentials">
             <h4>Demo Credentials:</h4>
             <p><strong>CEO:</strong> ceo@soapshop.com / Admin@123</p>
+            <p className="login-hint">Create Manager accounts after logging in</p>
           </div>
           <p className="login-version">Version 1.0.0 | Currency: GH₵</p>
         </div>

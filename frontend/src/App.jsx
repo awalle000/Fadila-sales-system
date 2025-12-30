@@ -11,12 +11,30 @@ import Footer from './components/layout/Footer/Footer';
 import './App.css';
 
 const AppContent = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1.5rem',
+        color: '#666'
+      }}>
+        <div>Loading... 🧼</div>
+      </div>
+    );
+  }
+
+  // If no user, show routes (which will redirect to login)
   if (!user) {
     return <AppRoutes />;
   }
 
+  // User is authenticated, show full layout
   return (
     <div className="app-container">
       <Navbar />

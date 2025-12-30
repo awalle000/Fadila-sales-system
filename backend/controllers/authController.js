@@ -57,12 +57,15 @@ export const login = asyncHandler(async (req, res) => {
 
   const token = generateToken(user._id, user.role);
 
+  // ✅ Updated response format
   res.json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
     token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    },
     loginLogId: loginLog._id
   });
 
@@ -216,7 +219,7 @@ export const deleteUserById = asyncHandler(async (req, res) => {
 });
 
 // @desc    Toggle user active status (CEO only)
-// @route   PUT /api/auth/users/:id/toggle-status
+// @route   PATCH /api/auth/users/:id/toggle-status
 // @access  Private/CEO
 export const toggleStatus = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);

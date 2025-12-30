@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllUsers, registerUser, toggleUserStatus, deleteUser } from '../../../services/authService';
+import { getAllUsers, createUser, toggleUserStatus, deleteUser } from '../../../services/authService';
 import { useAuth } from '../../../context/AuthContext';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -43,7 +43,8 @@ const UserManagement = () => {
     setSaving(true);
 
     try {
-      await registerUser(formData);
+      // ✅ Changed from registerUser to createUser
+      await createUser(formData);
       toast.success('User created successfully!');
       setShowAddModal(false);
       setFormData({ name: '', email: '', password: '', role: 'manager' });

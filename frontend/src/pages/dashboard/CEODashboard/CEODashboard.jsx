@@ -21,7 +21,7 @@ const CEODashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
-    setLoading(true);
+    setLoading(false);
     try {
       const [overview, products, lowStock] = await Promise.all([
         getDashboardOverview(),
@@ -33,8 +33,11 @@ const CEODashboard = () => {
       setTopProducts(products);
       setLowStockProducts(lowStock);
     } catch (error) {
-      toast.error('Failed to load dashboard data');
-      console.error('Dashboard error:', error);
+      // Only show error for actual server errors, not empty data
+      if (error.response && error.response.status !== 404) {
+        toast.error('Failed to load dashboard data');
+        console.error('Dashboard error:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -111,9 +114,11 @@ const CEODashboard = () => {
       )}
 
       {/* Charts */}
-      <div className="charts-grid">
-        <ProfitChart data={topProducts} title="Top 5 Products by Profit" />
-      </div>
+      {topProducts.length > 0 && (
+        <div className="charts-grid">
+          <ProfitChart data={topProducts} title="Top 5 Products by Profit" />
+        </div>
+      )}
 
       {/* Top Products Table */}
       <div className="dashboard-section">
@@ -150,7 +155,9 @@ const CEODashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="no-data">No sales data available</td>
+                  <td colSpan="5" className="no-data">
+                    📊 No sales data yet. Start by adding products and making your first sale!
+                  </td>
                 </tr>
               )}
             </tbody>

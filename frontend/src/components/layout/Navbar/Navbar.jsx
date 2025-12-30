@@ -15,7 +15,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <h1 className="navbar-brand">🧼 Soap Shop System</h1>
+        <h1 className="navbar-brand">🧼 Fadila Enterprise</h1>
         <div className="navbar-time">
           {formatDateTime(new Date())}
         </div>

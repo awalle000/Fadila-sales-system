@@ -1,8 +1,16 @@
 import api from './api';
 
 export const getAllProducts = async () => {
-  const response = await api.get('/products');
-  return response.data;
+  try {
+    const response = await api.get('/products');
+    return response.data || [];
+  } catch (error) {
+    // Return empty array instead of throwing error
+    if (error.response?.status === 404) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const getProduct = async (productId) => {
@@ -34,11 +42,27 @@ export const adjustStock = async (productId, quantityChange, reason) => {
 };
 
 export const getLowStockProducts = async () => {
-  const response = await api.get('/products/alerts/low-stock');
-  return response.data;
+  try {
+    const response = await api.get('/products/alerts/low-stock');
+    return response.data || [];
+  } catch (error) {
+    // Return empty array instead of throwing error
+    if (error.response?.status === 404) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const getProductCategories = async () => {
-  const response = await api.get('/products/categories');
-  return response.data;
+  try {
+    const response = await api.get('/products/categories');
+    return response.data || [];
+  } catch (error) {
+    // Return empty array instead of throwing error
+    if (error.response?.status === 404) {
+      return [];
+    }
+    throw error;
+  }
 };
