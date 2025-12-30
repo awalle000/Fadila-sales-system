@@ -1,0 +1,38 @@
+@import '../AddProduct/AddProduct.css';
+
+.current-stock-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.current-stock-banner h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stock-modal {
+  padding: 20px 0;
+}
+
+.help-text {
+  display: block;
+  margin-top: -12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

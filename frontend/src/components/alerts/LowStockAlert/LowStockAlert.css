@@ -1,0 +1,127 @@
+.low-stock-alert {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  border: 2px solid #ff6b6b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 107, 107, 0.1);
+  border-bottom: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.alert-icon {
+  font-size: 32px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.alert-title h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #c92a2a;
+}
+
+.alert-title p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.alert-body {
+  padding: 20px;
+}
+
+.alert-section {
+  margin-bottom: 16px;
+}
+
+.alert-section:last-child {
+  margin-bottom: 0;
+}
+
+.alert-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-section.critical h4 {
+  color: #c92a2a;
+}
+
+.alert-section.low h4 {
+  color: #f59f00;
+}
+
+.alert-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.alert-section li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.product-stock {
+  font-weight: 700;
+  color: #c92a2a;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.alert-footer {
+  padding: 16px 20px;
+  background: rgba(255, 107, 107, 0.05);
+  border-top: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.btn-view-all {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-view-all:hover {
+  background: linear-gradient(135deg, #ee5a52 0%, #c92a2a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
