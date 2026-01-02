@@ -1,0 +1,54 @@
+# =========================
+# GENERAL
+# =========================
+# Node dependencies
+node_modules/
+
+# Environment / secret files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors & IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cache / temp
+.cache/
+*.sqlite
+*.db
+
+# =========================
+# FRONTEND (React / Vite)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# =========================
+# BACKEND (Node / Express)
+# =========================
+backend/node_modules/
+
+# =========================
+# Ignore personal or temporary files
+*.log

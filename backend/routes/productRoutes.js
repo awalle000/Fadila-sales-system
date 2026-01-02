@@ -1,31 +1,36 @@
 import express from 'express';
 import {
-  login,
-  logout,
-  getMe,
-  register,
-  getUsers,
-  updateUserById,
-  deleteUserById,
-  toggleStatus
-} from '../controllers/authController.js';
+  addProduct,
+  getProducts,
+  getProduct,
+  updateProductById,
+  deleteProductById,
+  adjustStock,
+  getLowStock,
+  getCategories
+} from '../controllers/productController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { ceoOnly } from '../middleware/roleMiddleware.js';
+import { ceoOnly, managerOrCeo } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
-router.post('/login', login);
+// All routes require authentication
+router.use(protect);
 
-// Protected routes
-router.post('/logout', protect, logout);
-router.get('/me', protect, getMe);
+// ✅ IMPORTANT: Specific routes MUST come before parameterized routes /:id
+router.get('/categories', getCategories);
+router.get('/alerts/low-stock', getLowStock);
+
+// Routes accessible by Manager or CEO
+router.get('/', getProducts);
+router.post('/', managerOrCeo, addProduct);
+
+// Parameterized routes - must come AFTER specific routes
+router.get('/:id', getProduct);
+router.put('/:id', managerOrCeo, updateProductById);
+router.put('/:id/stock', managerOrCeo, adjustStock);
 
 // CEO only routes
-router.post('/register', protect, ceoOnly, register);
-router.get('/users', protect, ceoOnly, getUsers);
-router.put('/users/:id', protect, ceoOnly, updateUserById);
-router.delete('/users/:id', protect, ceoOnly, deleteUserById);
-router.put('/users/:id/toggle-status', protect, ceoOnly, toggleStatus);
+router.delete('/:id', ceoOnly, deleteProductById);
 
 export default router;

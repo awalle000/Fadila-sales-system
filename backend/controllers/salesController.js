@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import Sale from '../models/Sale.js';
 import Product from '../models/Product.js';
 import { ActivityLog } from '../models/ActivityLog.js';
-import { calculateProfit, calculateTotalRevenue } from '../utils/calculateProfit.js';
+import { calculateProfit, calculateTotalRevenue, formatCedis } from '../utils/calculateProfit.js';
 
 // @desc    Record new sale
 // @route   POST /api/sales
@@ -53,7 +53,7 @@ export const recordSale = asyncHandler(async (req, res) => {
     user: req.user._id,
     userName: req.user.name,
     action: 'SALE_RECORDED',
-    details: `Sold ${quantitySold} ${product.unit} of ${product.name} - Total: GH₵${totalAmount.toFixed(2)}`,
+    details: `Sold ${quantitySold} ${product.unit} of ${product.name} - Total: ${formatCedis(totalAmount)}`,
     ipAddress: req.ip
   });
 
@@ -62,7 +62,7 @@ export const recordSale = asyncHandler(async (req, res) => {
     .populate('soldBy', 'name email');
 
   res.status(201).json(populatedSale);
-  console.log(`💰 Sale recorded: ${product.name} x${quantitySold} = GH₵${totalAmount.toFixed(2)}`);
+  console.log(`💰 Sale recorded: ${product.name} x${quantitySold} = ${formatCedis(totalAmount)}`);
 });
 
 // @desc    Get all sales
@@ -87,6 +87,17 @@ export const getSales = asyncHandler(async (req, res) => {
   const sales = await Sale.find(query)
     .populate('product', 'name category unit')
     .populate('soldBy', 'name email')
+    .sort({ saleDate: -1 });
+
+  res.json(sales);
+});
+
+// @desc    Get sales by current user
+// @route   GET /api/sales/my-sales
+// @access  Private
+export const getMySales = asyncHandler(async (req, res) => {
+  const sales = await Sale.find({ soldBy: req.user._id })
+    .populate('product', 'name category unit')
     .sort({ saleDate: -1 });
 
   res.json(sales);
@@ -137,7 +148,7 @@ export const getMonthlySalesReport = asyncHandler(async (req, res) => {
 // @route   GET /api/sales/top-products
 // @access  Private
 export const getTopProducts = asyncHandler(async (req, res) => {
-  const { limit } = req.query;
+  const limit = parseInt(req.query.limit) || 10;
 
   const topProducts = await Sale.aggregate([
     {
@@ -149,20 +160,9 @@ export const getTopProducts = asyncHandler(async (req, res) => {
         totalProfit: { $sum: '$profit' }
       }
     },
-    { $sort: { totalSold: -1 } },
-    { $limit: parseInt(limit) || 10 }
+    { $sort: { totalRevenue: -1 } },
+    { $limit: limit }
   ]);
 
   res.json(topProducts);
-});
-
-// @desc    Get sales by current user
-// @route   GET /api/sales/my-sales
-// @access  Private
-export const getMySales = asyncHandler(async (req, res) => {
-  const sales = await Sale.find({ soldBy: req.user._id })
-    .populate('product', 'name category unit')
-    .sort({ saleDate: -1 });
-
-  res.json(sales);
 });

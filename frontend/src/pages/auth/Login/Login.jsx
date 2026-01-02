@@ -15,11 +15,12 @@ const Login = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role === 'ceo') {
+      // Small delay to ensure state is fully updated
+      const timer = setTimeout(() => {
         navigate('/dashboard', { replace: true });
-      } else if (user.role === 'manager') {
-        navigate('/dashboard', { replace: true });
-      }
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -33,19 +34,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const userData = await login(email, password);
+      await login(email, password);
       
-      // Navigate based on role
-      if (userData.role === 'ceo') {
+      // Wait for state to update before navigating
+      setTimeout(() => {
         navigate('/dashboard', { replace: true });
-      } else if (userData.role === 'manager') {
-        navigate('/dashboard', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+        // Force a page refresh to ensure all components load
+        window.location.reload();
+      }, 200);
     } catch (error) {
       console.error('Login failed:', error);
-    } finally {
       setLoading(false);
     }
   };

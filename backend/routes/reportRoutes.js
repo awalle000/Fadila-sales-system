@@ -1,32 +1,28 @@
 import express from 'express';
 import {
-  addProduct,
-  getProducts,
-  getProduct,
-  updateProductById,
-  deleteProductById,
-  adjustStock,
-  getLowStock,
-  getCategories
-} from '../controllers/productController.js';
+  getDailyReport,
+  getMonthlyReport,
+  getProfitLossReport,
+  getSalesStatistics,
+  getInventoryAlerts,
+  getDashboardOverview
+} from '../controllers/reportController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { ceoOnly, managerOrCeo } from '../middleware/roleMiddleware.js';
+import { ceoOnly } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(protect);
 
-// Routes accessible by Manager or CEO
-router.get('/', getProducts);
-router.get('/categories', getCategories);
-router.get('/alerts/low-stock', getLowStock);
-router.get('/:id', getProduct);
-router.post('/', managerOrCeo, addProduct);
-router.put('/:id', managerOrCeo, updateProductById);
-router.put('/:id/stock', managerOrCeo, adjustStock);
+// Report routes
+router.get('/daily/:date', getDailyReport);
+router.get('/monthly/:year/:month', getMonthlyReport);
+router.get('/stats', getSalesStatistics);
+router.get('/inventory-alerts', getInventoryAlerts);
+router.get('/dashboard', getDashboardOverview);
 
 // CEO only routes
-router.delete('/:id', ceoOnly, deleteProductById);
+router.get('/profit-loss', ceoOnly, getProfitLossReport);
 
 export default router;
