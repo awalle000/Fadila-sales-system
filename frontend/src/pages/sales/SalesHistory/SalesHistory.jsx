@@ -99,13 +99,16 @@ const SalesHistory = () => {
             <div className="summary-value">{formatCedis(totals.totalRevenue)}</div>
           </div>
         </div>
-        <div className="summary-card">
-          <div className="summary-icon">📈</div>
-          <div className="summary-content">
-            <h3>Total Profit</h3>
-            <div className="summary-value profit">{formatCedis(totals.totalProfit)}</div>
+        {/* ✅ Only show profit card to CEO */}
+        {isCEO && (
+          <div className="summary-card">
+            <div className="summary-icon">📈</div>
+            <div className="summary-content">
+              <h3>Total Profit</h3>
+              <div className="summary-value profit">{formatCedis(totals.totalProfit)}</div>
+            </div>
           </div>
-        </div>
+        )}
         <div className="summary-card">
           <div className="summary-icon">📦</div>
           <div className="summary-content">
@@ -172,7 +175,8 @@ const SalesHistory = () => {
               <th>Quantity</th>
               <th>Unit Price</th>
               <th>Total Amount</th>
-              <th>Profit</th>
+              {/* ✅ Only show profit column to CEO */}
+              {isCEO && <th>Profit</th>}
               {isCEO && <th>Sold By</th>}
               <th>Notes</th>
             </tr>
@@ -186,14 +190,15 @@ const SalesHistory = () => {
                   <td>{sale.quantitySold}</td>
                   <td>{formatCedis(sale.unitPrice)}</td>
                   <td className="revenue">{formatCedis(sale.totalAmount)}</td>
-                  <td className="profit">{formatCedis(sale.profit)}</td>
+                  {/* ✅ Only show profit cell to CEO */}
+                  {isCEO && <td className="profit">{formatCedis(sale.profit)}</td>}
                   {isCEO && <td>{sale.sellerName}</td>}
                   <td className="notes-cell">{sale.notes || '-'}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={isCEO ? "8" : "7"} className="no-data">
+                <td colSpan={isCEO ? "8" : "6"} className="no-data">
                   No sales found
                 </td>
               </tr>

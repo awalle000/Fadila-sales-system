@@ -26,19 +26,26 @@ const ActivityLogs = () => {
     try {
       if (activeTab === 'activity') {
         const data = await getActivityLogs();
-        setActivityLogs(data);
+        setActivityLogs(data || []);
       } else {
         const data = await getLoginLogs();
-        setLoginLogs(data);
+        setLoginLogs(data || []);
       }
     } catch (error) {
       toast.error('Failed to load logs');
+      // Set empty arrays on error
+      if (activeTab === 'activity') {
+        setActivityLogs([]);
+      } else {
+        setLoginLogs([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const filterLogs = () => {
+    // ✅ Get current logs based on active tab
     const logs = activeTab === 'activity' ? activityLogs : loginLogs;
     
     if (!searchTerm) {
@@ -46,16 +53,27 @@ const ActivityLogs = () => {
       return;
     }
 
-    const filtered = logs.filter(log =>
-      log.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.details?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    setFilteredLogs(filtered);
+    // ✅ Different filtering for different tab types
+    if (activeTab === 'activity') {
+      const filtered = logs.filter(log =>
+        log.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.details?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredLogs(filtered);
+    } else {
+      // For login logs, only filter by userName
+      const filtered = logs.filter(log =>
+        log.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredLogs(filtered);
+    }
   };
 
   const getActionBadge = (action) => {
+    // ✅ Handle undefined or null action
+    if (!action) return <span className="action-badge secondary">📝 UNKNOWN</span>;
+
     const badges = {
       LOGIN: { color: 'success', icon: '🔓' },
       LOGOUT: { color: 'secondary', icon: '🔒' },
@@ -89,13 +107,19 @@ const ActivityLogs = () => {
       <div className="tabs-container">
         <button
           className={`tab-btn ${activeTab === 'activity' ? 'active' : ''}`}
-          onClick={() => setActiveTab('activity')}
+          onClick={() => {
+            setActiveTab('activity');
+            setSearchTerm(''); // Clear search when switching
+          }}
         >
           📝 Activity Logs ({activityLogs.length})
         </button>
         <button
           className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
-          onClick={() => setActiveTab('login')}
+          onClick={() => {
+            setActiveTab('login');
+            setSearchTerm(''); // Clear search when switching
+          }}
         >
           🔐 Login History ({loginLogs.length})
         </button>
@@ -105,7 +129,11 @@ const ActivityLogs = () => {
       <div className="search-section">
         <input
           type="text"
-          placeholder="🔍 Search logs by user, action, or details..."
+          placeholder={
+            activeTab === 'activity' 
+              ? "🔍 Search by user, action, or details..." 
+              : "🔍 Search by user..."
+          }
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
@@ -141,7 +169,9 @@ const ActivityLogs = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="no-data">No activity logs found</td>
+                      <td colSpan="5" className="no-data">
+                        {searchTerm ? `No activity logs found matching "${searchTerm}"` : 'No activity logs found'}
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -174,11 +204,11 @@ const ActivityLogs = () => {
                           <td className="user-cell">{log.userName}</td>
                           <td className="date-cell">
                             {log.logoutTime ? formatDateTime(log.logoutTime) : (
-                              <span className="active-session">Active</span>
+                              <span className="active-session">🟢 Active</span>
                             )}
                           </td>
                           <td>
-                            {duration ? `${duration} minutes` : '-'}
+                            {duration ? `${duration} min` : '-'}
                           </td>
                           <td className="ip-cell">{log.ipAddress || '-'}</td>
                         </tr>
@@ -186,7 +216,9 @@ const ActivityLogs = () => {
                     })
                   ) : (
                     <tr>
-                      <td colSpan="5" className="no-data">No login logs found</td>
+                      <td colSpan="5" className="no-data">
+                        {searchTerm ? `No login logs found matching "${searchTerm}"` : 'No login logs found'}
+                      </td>
                     </tr>
                   )}
                 </tbody>

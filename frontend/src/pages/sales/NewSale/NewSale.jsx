@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { getAllProducts } from '../../../services/productService';
 import { recordSale } from '../../../services/salesService';
 import { calculateProfit, calculateTotalRevenue, formatCedis } from '../../../utils/calculateProfit';
@@ -9,28 +10,51 @@ import toast from 'react-hot-toast';
 import './NewSale.css';
 
 const NewSale = () => {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [notes, setNotes] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const isCEO = user?.role === 'ceo';
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    filterProducts();
+  }, [products, searchTerm]);
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const data = await getAllProducts();
-      setProducts(data.filter(p => p.quantityInStock > 0));
+      const availableProducts = data.filter(p => p.quantityInStock > 0);
+      setProducts(availableProducts);
+      setFilteredProducts(availableProducts);
     } catch (error) {
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
+  };
+
+  const filterProducts = () => {
+    if (!searchTerm) {
+      setFilteredProducts(products);
+      return;
+    }
+
+    const filtered = products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(filtered);
   };
 
   const getSelectedProductDetails = () => {
@@ -96,6 +120,26 @@ const NewSale = () => {
 
       <div className="sale-form-container">
         <form onSubmit={handleSubmit}>
+          {/* Search Bar */}
+          <div className="input-group">
+            <label htmlFor="search" className="input-label">
+              🔍 Search Products
+            </label>
+            <input
+              type="text"
+              id="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by product name or category..."
+              className="input-field"
+            />
+            {searchTerm && (
+              <small className="help-text">
+                {filteredProducts.length} product(s) found
+              </small>
+            )}
+          </div>
+
           <div className="input-group">
             <label htmlFor="product" className="input-label">
               Select Product <span className="required">*</span>
@@ -111,12 +155,21 @@ const NewSale = () => {
               required
             >
               <option value="">-- Select a product --</option>
-              {products.map(product => (
-                <option key={product._id} value={product._id}>
-                  {product.name} - {formatCedis(product.sellingPrice)} ({product.quantityInStock} {product.unit} available)
-                </option>
-              ))}
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map(product => (
+                  <option key={product._id} value={product._id}>
+                    {product.name} - {formatCedis(product.sellingPrice)} ({product.quantityInStock} {product.unit} available)
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>No products found</option>
+              )}
             </select>
+            {filteredProducts.length === 0 && searchTerm && (
+              <small className="help-text error">
+                No products match "{searchTerm}". Try a different search term.
+              </small>
+            )}
           </div>
 
           {selectedProduct && (
@@ -159,6 +212,10 @@ const NewSale = () => {
                 <div className="sale-summary">
                   <h3>Sale Summary</h3>
                   <div className="summary-row">
+                    <span>Product:</span>
+                    <span className="value">{getSelectedProductDetails().name}</span>
+                  </div>
+                  <div className="summary-row">
                     <span>Unit Price:</span>
                     <span className="value">{formatCedis(getSelectedProductDetails().sellingPrice)}</span>
                   </div>
@@ -170,10 +227,13 @@ const NewSale = () => {
                     <span>Total Amount:</span>
                     <span className="value">{formatCedis(saleDetails.totalRevenue)}</span>
                   </div>
-                  <div className="summary-row profit">
-                    <span>Expected Profit:</span>
-                    <span className="value">{formatCedis(saleDetails.profit)}</span>
-                  </div>
+                  {/* ✅ Only show profit to CEO */}
+                  {isCEO && (
+                    <div className="summary-row profit">
+                      <span>Expected Profit:</span>
+                      <span className="value">{formatCedis(saleDetails.profit)}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </>
