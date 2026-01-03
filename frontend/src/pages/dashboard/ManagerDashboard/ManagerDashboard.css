@@ -42,10 +42,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .stat-content {
   flex: 1;
+  min-width: 0; /* ✅ Prevents overflow */
 }
 
 .stat-content h3 {
@@ -62,6 +64,7 @@
   font-weight: 700;
   color: #333;
   margin-bottom: 8px;
+  word-break: break-word; /* ✅ Prevents long numbers from overflowing */
 }
 
 .stat-meta {
@@ -81,6 +84,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap; /* ✅ Wraps on small screens */
 }
 
 .section-header h2 {
@@ -100,6 +105,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-view-all:hover {
@@ -119,11 +126,13 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto; /* ✅ Horizontal scroll on small screens */
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* ✅ Minimum width for proper display */
 }
 
 .data-table thead {
@@ -138,6 +147,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .data-table td {
@@ -166,6 +176,7 @@
   border-radius: 50%;
   font-weight: 700;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .product-name {
@@ -208,6 +219,7 @@
   gap: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;
 }
 
 .action-card:hover {
@@ -224,25 +236,221 @@
   font-size: 16px;
   font-weight: 600;
   color: #333;
+  text-align: center;
 }
 
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .stat-card {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .stat-icon {
+    font-size: 42px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .data-table {
+    min-width: 550px;
+  }
+}
+
+/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .stat-card:hover {
+    transform: none; /* ✅ Disable hover lift on mobile */
+  }
+
+  .stat-icon {
+    font-size: 36px;
+  }
+
+  .stat-content h3 {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .stat-meta {
+    font-size: 12px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 24px;
   }
 
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+  }
+
+  .btn-view-all {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .charts-grid {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .table-container {
+    border-radius: 8px;
   }
 
   .data-table {
     font-size: 12px;
+    min-width: 500px;
   }
 
   .data-table th,
   .data-table td {
-    padding: 12px 8px;
+    padding: 12px 10px;
+  }
+
+  .data-table th {
+    font-size: 11px;
+  }
+
+  .rank-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .action-card {
+    padding: 20px;
+  }
+
+  .action-card:hover {
+    transform: none;
+  }
+
+  .action-icon {
+    font-size: 36px;
+  }
+
+  .action-text {
+    font-size: 15px;
+  }
+
+  .no-data {
+    padding: 30px !important;
+    font-size: 14px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    font-size: 32px;
+  }
+
+  .stat-content h3 {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-meta {
+    font-size: 11px;
+  }
+
+  .section-header h2 {
+    font-size: 16px;
+  }
+
+  .btn-view-all {
+    font-size: 13px;
+  }
+
+  .data-table {
+    font-size: 11px;
+    min-width: 450px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 8px;
+  }
+
+  .data-table th {
+    font-size: 10px;
+  }
+
+  .rank-badge {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .action-card {
+    padding: 18px;
+    gap: 10px;
+  }
+
+  .action-icon {
+    font-size: 32px;
+  }
+
+  .action-text {
+    font-size: 14px;
+  }
+}
+
+/* ✅ Landscape Mobile Fix */
+@media (max-width: 768px) and (orientation: landscape) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

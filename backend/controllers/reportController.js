@@ -10,15 +10,37 @@ import { formatCedis } from '../utils/calculateProfit.js';
 export const getDailyReport = asyncHandler(async (req, res) => {
   const { date } = req.params;
   
-  const startDate = new Date(date);
-  startDate.setHours(0, 0, 0, 0);
+  // ✅ Debug: Check all sales in database
+  const allSales = await Sale.find({}).limit(5).sort({ saleDate: -1 });
+  console.log('🔍 Last 5 sales in database:', allSales.map(s => ({
+    id: s._id,
+    date: s.saleDate,
+    product: s.productName,
+    amount: s.totalAmount
+  })));
   
-  const endDate = new Date(date);
-  endDate.setHours(23, 59, 59, 999);
+  // ✅ Fix: Parse date correctly to avoid timezone issues
+  const [year, month, day] = date.split('-').map(Number);
+  const startDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+  const endDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+  console.log('📅 Generating daily report for:', date);
+  console.log('🕐 Start:', startDate);
+  console.log('🕐 End:', endDate);
 
   const sales = await Sale.find({
     saleDate: { $gte: startDate, $lte: endDate }
   });
+
+  console.log(`✅ Found ${sales.length} sales for ${date}`);
+  if (sales.length > 0) {
+    console.log('📦 Sales found:', sales.map(s => ({
+      product: s.productName,
+      qty: s.quantitySold,
+      amount: s.totalAmount,
+      date: s.saleDate
+    })));
+  }
 
   const report = generateDailyReport(sales);
 
@@ -34,12 +56,18 @@ export const getDailyReport = asyncHandler(async (req, res) => {
 export const getMonthlyReport = asyncHandler(async (req, res) => {
   const { year, month } = req.params;
   
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+  const startDate = new Date(parseInt(year), parseInt(month) - 1, 1, 0, 0, 0, 0);
+  const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+
+  console.log('📅 Generating monthly report for:', `${year}-${month}`);
+  console.log('🕐 Start:', startDate);
+  console.log('🕐 End:', endDate);
 
   const sales = await Sale.find({
     saleDate: { $gte: startDate, $lte: endDate }
   });
+
+  console.log(`✅ Found ${sales.length} sales for ${year}-${month}`);
 
   const report = generateMonthlyReport(sales);
 
@@ -61,12 +89,20 @@ export const getProfitLossReport = asyncHandler(async (req, res) => {
     throw new Error('Please provide start date and end date');
   }
 
+  // ✅ Fix: Parse dates correctly
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+  const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+  
+  const start = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+  const end = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+
+  console.log('📅 Generating P&L report from:', startDate, 'to:', endDate);
+
   const sales = await Sale.find({
-    saleDate: {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    }
+    saleDate: { $gte: start, $lte: end }
   });
+
+  console.log(`✅ Found ${sales.length} sales for P&L`);
 
   const statement = generateProfitLossStatement(sales, parseFloat(expenses) || 0);
 
@@ -87,13 +123,17 @@ export const getSalesStatistics = asyncHandler(async (req, res) => {
     throw new Error('Please provide start date and end date');
   }
 
+  // ✅ Fix: Parse dates correctly
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+  const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+  
+  const start = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+  const end = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+
   const stats = await Sale.aggregate([
     {
       $match: {
-        saleDate: {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate)
-        }
+        saleDate: { $gte: start, $lte: end }
       }
     },
     {

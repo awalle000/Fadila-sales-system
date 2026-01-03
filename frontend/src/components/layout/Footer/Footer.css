@@ -25,9 +25,10 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-@media (max-width: 768px) {
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
   .footer {
-    padding: 20px 16px;
+    padding: 20px 24px;
   }
 
   .footer-text {
@@ -36,5 +37,38 @@
 
   .footer-subtext {
     font-size: 11px;
+  }
+}
+
+/* ✅ Mobile Responsive */
+@media (max-width: 768px) {
+  .footer {
+    padding: 18px 16px;
+    margin-bottom: 70px; /* ✅ Add space for floating sidebar toggle button */
+  }
+
+  .footer-text {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .footer-subtext {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .footer {
+    padding: 16px 12px;
+  }
+
+  .footer-text {
+    font-size: 11px;
+  }
+
+  .footer-subtext {
+    font-size: 9px;
   }
 }

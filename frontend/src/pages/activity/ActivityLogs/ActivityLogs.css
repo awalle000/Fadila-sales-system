@@ -6,6 +6,7 @@
   display: flex;
   gap: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap; /* ✅ Wraps on small screens */
 }
 
 .tab-btn {
@@ -19,6 +20,9 @@
   color: #666;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 120px; /* ✅ Minimum width before wrapping */
+  min-height: 44px; /* ✅ Touch-friendly */
 }
 
 .tab-btn:hover {
@@ -54,6 +58,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .action-badge.success {
@@ -116,12 +121,175 @@
   text-transform: uppercase;
 }
 
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .tabs-container {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-width: 110px;
+  }
+
+  .search-section {
+    padding: 18px;
+  }
+
+  .details-cell {
+    max-width: 250px;
+  }
+
+  .action-badge {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+}
+
+/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
   .tabs-container {
     flex-direction: column;
+    padding: 8px;
+    gap: 8px;
   }
 
   .tab-btn {
     width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    min-width: auto;
+    min-height: 48px; /* ✅ Larger touch target */
+  }
+
+  .tab-btn:hover {
+    background: transparent; /* ✅ Disable hover on mobile */
+  }
+
+  .tab-btn:active {
+    background: #f8f9fa;
+  }
+
+  .search-section {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .logs-container {
+    border-radius: 10px;
+    overflow-x: auto; /* ✅ Horizontal scroll for table */
+  }
+
+  .logs-container table {
+    min-width: 700px; /* ✅ Minimum width for proper display */
+  }
+
+  .action-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .user-cell {
+    font-size: 13px;
+  }
+
+  .details-cell {
+    max-width: 200px;
+    font-size: 12px;
+  }
+
+  .ip-cell {
+    font-size: 12px;
+  }
+
+  .active-session {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  /* ✅ Make data table more mobile-friendly */
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 10px;
+  }
+
+  .data-table th {
+    font-size: 11px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .tabs-container {
+    padding: 6px;
+    margin-bottom: 20px;
+  }
+
+  .tab-btn {
+    padding: 13px 18px;
+    font-size: 14px;
+  }
+
+  .search-section {
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+
+  .logs-container table {
+    min-width: 650px;
+  }
+
+  .action-badge {
+    font-size: 9px;
+    padding: 3px 7px;
+    letter-spacing: 0.3px;
+  }
+
+  .user-cell {
+    font-size: 12px;
+  }
+
+  .details-cell {
+    max-width: 150px;
+    font-size: 11px;
+  }
+
+  .ip-cell {
+    font-size: 11px;
+  }
+
+  .active-session {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .data-table {
+    font-size: 11px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 8px;
+  }
+
+  .data-table th {
+    font-size: 10px;
+  }
+}
+
+/* ✅ Very Small Screens - Additional table optimization */
+@media (max-width: 360px) {
+  .logs-container table {
+    min-width: 600px;
+  }
+
+  .details-cell {
+    max-width: 120px;
   }
 }

@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { getDailyReport } from '../../../services/salesService';
 import { getTodayDate } from '../../../utils/formatDate';
-import { parseCedis } from '../../../utils/calculateProfit';
 import Button from '../../../components/common/Button/Button';
 import Loader from '../../../components/common/Loader/Loader';
-import SalesChart from '../../../components/charts/SalesChart/SalesChart';
 import toast from 'react-hot-toast';
 import './DailyReport.css';
 
@@ -22,14 +20,21 @@ const DailyReport = () => {
     setLoading(true);
     try {
       const data = await getDailyReport(selectedDate);
-      setReport(data);
+console.log('📊 Daily Report Data:', data); // ✅ Debug log
+console.log('📅 Selected Date:', selectedDate); // ✅ Debug log
+setReport(data);
+
+if (!data || (data.productBreakdown && data.productBreakdown.length === 0)) {
+  toast('No sales data found for this date', { icon: 'ℹ️' });
+}
     } catch (error) {
       toast.error('Failed to load daily report');
       console.error('Report error:', error);
+      setReport(null);
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <div className="page-container">
@@ -66,7 +71,7 @@ const DailyReport = () => {
               <div className="summary-icon">🧾</div>
               <div className="summary-content">
                 <h3>Transactions</h3>
-                <div className="summary-value">{report.summary.totalTransactions}</div>
+                <div className="summary-value">{report.summary?.totalTransactions || 0}</div>
               </div>
             </div>
 
@@ -74,7 +79,7 @@ const DailyReport = () => {
               <div className="summary-icon">📦</div>
               <div className="summary-content">
                 <h3>Items Sold</h3>
-                <div className="summary-value">{report.summary.totalItemsSold}</div>
+                <div className="summary-value">{report.summary?.totalItemsSold || 0}</div>
               </div>
             </div>
 
@@ -82,7 +87,7 @@ const DailyReport = () => {
               <div className="summary-icon">💰</div>
               <div className="summary-content">
                 <h3>Revenue</h3>
-                <div className="summary-value">{report.summary.totalRevenue}</div>
+                <div className="summary-value">{report.summary?.totalRevenue || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -90,7 +95,7 @@ const DailyReport = () => {
               <div className="summary-icon">💵</div>
               <div className="summary-content">
                 <h3>Cost</h3>
-                <div className="summary-value cost">{report.summary.totalCost}</div>
+                <div className="summary-value cost">{report.summary?.totalCost || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -98,7 +103,7 @@ const DailyReport = () => {
               <div className="summary-icon">📈</div>
               <div className="summary-content">
                 <h3>Profit</h3>
-                <div className="summary-value profit">{report.summary.totalProfit}</div>
+                <div className="summary-value profit">{report.summary?.totalProfit || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -106,13 +111,13 @@ const DailyReport = () => {
               <div className="summary-icon">📊</div>
               <div className="summary-content">
                 <h3>Profit Margin</h3>
-                <div className="summary-value">{report.summary.profitMargin}</div>
+                <div className="summary-value">{report.summary?.profitMargin || '0%'}</div>
               </div>
             </div>
           </div>
 
           {/* Product Breakdown */}
-          {report.productBreakdown && report.productBreakdown.length > 0 && (
+          {report.productBreakdown && report.productBreakdown.length > 0 ? (
             <div className="report-section">
               <h2 className="section-title">📦 Product Breakdown</h2>
               <div className="table-container">
@@ -138,12 +143,18 @@ const DailyReport = () => {
                 </table>
               </div>
             </div>
+          ) : (
+            <div className="no-data-message">
+              <p>📊 No sales recorded for this date</p>
+            </div>
           )}
 
           {/* Status Badge */}
-          <div className={`status-banner ${report.summary.isProfitable ? 'profitable' : 'loss'}`}>
-            {report.summary.isProfitable ? '✅ Profitable Day' : '⚠️ Loss Day'}
-          </div>
+          {report.summary && (
+            <div className={`status-banner ${report.summary.isProfitable ? 'profitable' : 'loss'}`}>
+              {report.summary.isProfitable ? '✅ Profitable Day' : '⚠️ Loss Day'}
+            </div>
+          )}
         </>
       )}
 

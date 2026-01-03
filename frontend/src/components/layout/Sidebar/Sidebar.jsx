@@ -1,9 +1,12 @@
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isCEO = user?.role === 'ceo';
 
   const menuItems = [
@@ -73,36 +76,74 @@ const Sidebar = () => {
     item.roles.includes(user?.role)
   );
 
+  // ✅ Close sidebar when route changes (mobile)
+  const handleLinkClick = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // ✅ Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // ✅ Close sidebar when clicking overlay
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <h2 className="sidebar-title">Menu</h2>
-        <div className="sidebar-role-badge">
-          {user?.role?.toUpperCase()}
+    <>
+      {/* ✅ Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <h2 className="sidebar-title">Menu</h2>
+          <div className="sidebar-role-badge">
+            {user?.role?.toUpperCase()}
+          </div>
         </div>
-      </div>
 
-      <nav className="sidebar-nav">
-        {visibleMenuItems.map((item, index) => (
-          <NavLink
-            key={index}
-            to={item.path}
-            className={({ isActive }) =>
-              `sidebar-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="sidebar-icon">{item.icon}</span>
-            <span className="sidebar-text">{item.title}</span>
-          </NavLink>
-        ))}
-      </nav>
+        <nav className="sidebar-nav">
+          {visibleMenuItems.map((item, index) => (
+            <NavLink
+              key={index}
+              to={item.path}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? 'active' : ''}`
+              }
+              onClick={handleLinkClick}
+            >
+              <span className="sidebar-icon">{item.icon}</span>
+              <span className="sidebar-text">{item.title}</span>
+            </NavLink>
+          ))}
+        </nav>
 
-      <div className="sidebar-footer">
-        <div className="sidebar-version">
-          Version 1.0.0
+        <div className="sidebar-footer">
+          <div className="sidebar-version">
+            Version 1.0.0
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      {/* ✅ Mobile Overlay */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`}
+        onClick={closeSidebar}
+        aria-hidden="true"
+      />
+
+      {/* ✅ Mobile Toggle Button */}
+      <button 
+        className="sidebar-toggle"
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar menu"
+        aria-expanded={sidebarOpen}
+      >
+        {sidebarOpen ? '✕' : '☰'}
+      </button>
+    </>
   );
 };
 

@@ -8,11 +8,17 @@ import { calculateProfit, calculateTotalRevenue, formatCedis } from '../utils/ca
 // @route   POST /api/sales
 // @access  Private/Manager or CEO
 export const recordSale = asyncHandler(async (req, res) => {
-  const { productId, quantitySold, notes } = req.body;
+  const { productId, quantitySold, notes, discount = 0 } = req.body;
 
   if (!productId || !quantitySold || quantitySold <= 0) {
     res.status(400);
     throw new Error('Please provide valid product ID and quantity');
+  }
+
+  // ✅ Validate discount
+  if (discount < 0) {
+    res.status(400);
+    throw new Error('Discount cannot be negative');
   }
 
   const product = await Product.findById(productId);
@@ -30,7 +36,22 @@ export const recordSale = asyncHandler(async (req, res) => {
   const unitPrice = parseFloat(product.sellingPrice);
   const costPrice = parseFloat(product.costPrice);
   const totalAmount = calculateTotalRevenue(unitPrice, quantitySold);
-  const profit = calculateProfit(costPrice, unitPrice, quantitySold);
+  const discountAmount = parseFloat(discount) || 0;
+
+  // ✅ Validate discount doesn't exceed total
+  if (discountAmount > totalAmount) {
+    res.status(400);
+    throw new Error('Discount cannot exceed total amount');
+  }
+
+  const finalAmount = totalAmount - discountAmount;
+  
+  // ✅ Calculate profit with discount applied
+  // Profit = Final Amount - Cost
+  const totalCost = costPrice * quantitySold;
+  const profit = finalAmount - totalCost;
+
+  const now = new Date();
 
   const sale = await Sale.create({
     product: product._id,
@@ -38,10 +59,13 @@ export const recordSale = asyncHandler(async (req, res) => {
     quantitySold,
     unitPrice,
     totalAmount,
+    discount: discountAmount,
+    finalAmount,
     costPrice,
     profit,
     soldBy: req.user._id,
     sellerName: req.user.name,
+    saleDate: now,
     notes
   });
 
@@ -53,7 +77,9 @@ export const recordSale = asyncHandler(async (req, res) => {
     user: req.user._id,
     userName: req.user.name,
     action: 'SALE_RECORDED',
-    details: `Sold ${quantitySold} ${product.unit} of ${product.name} - Total: ${formatCedis(totalAmount)}`,
+    details: discountAmount > 0 
+      ? `Sold ${quantitySold} ${product.unit} of ${product.name} - Total: ${formatCedis(totalAmount)}, Discount: ${formatCedis(discountAmount)}, Final: ${formatCedis(finalAmount)}`
+      : `Sold ${quantitySold} ${product.unit} of ${product.name} - Total: ${formatCedis(finalAmount)}`,
     ipAddress: req.ip
   });
 
@@ -62,7 +88,7 @@ export const recordSale = asyncHandler(async (req, res) => {
     .populate('soldBy', 'name email');
 
   res.status(201).json(populatedSale);
-  console.log(`💰 Sale recorded: ${product.name} x${quantitySold} = ${formatCedis(totalAmount)}`);
+  console.log(`💰 Sale recorded: ${product.name} x${quantitySold} = ${formatCedis(finalAmount)} ${discountAmount > 0 ? `(Discount: ${formatCedis(discountAmount)})` : ''} at ${now}`);
 });
 
 // @desc    Get all sales
@@ -156,7 +182,7 @@ export const getTopProducts = asyncHandler(async (req, res) => {
         _id: '$product',
         productName: { $first: '$productName' },
         totalSold: { $sum: '$quantitySold' },
-        totalRevenue: { $sum: '$totalAmount' },
+        totalRevenue: { $sum: '$finalAmount' }, // ✅ Use finalAmount (after discount)
         totalProfit: { $sum: '$profit' }
       }
     },

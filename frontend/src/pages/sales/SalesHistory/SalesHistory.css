@@ -25,10 +25,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .summary-content {
   flex: 1;
+  min-width: 0; /* ✅ Allows text to shrink */
 }
 
 .summary-content h3 {
@@ -44,6 +46,7 @@
   font-size: 24px;
   font-weight: 700;
   color: #667eea;
+  word-break: break-word; /* ✅ Prevents overflow */
 }
 
 .summary-value.profit {
@@ -67,6 +70,7 @@
   color: #666;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -93,24 +97,160 @@
   font-style: italic;
 }
 
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .summary-card {
+    padding: 18px;
+  }
+
+  .summary-icon {
+    font-size: 36px;
+  }
+
+  .summary-value {
+    font-size: 22px;
+  }
+
+  .filter-btn {
+    padding: 9px 18px;
+    font-size: 13px;
+  }
+}
+
+/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    padding: 16px;
+  }
+
+  .summary-card:hover {
+    transform: none; /* ✅ Disable hover lift on mobile */
+  }
+
+  .summary-icon {
+    font-size: 32px;
+  }
+
+  .summary-content h3 {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .summary-value {
+    font-size: 20px;
   }
 
   .date-filters {
-    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
   }
 
   .filter-btn {
     width: 100%;
+    padding: 12px 18px;
+    font-size: 14px;
   }
 
   .table-container {
     overflow-x: auto;
+    border-radius: 10px;
   }
 
   .data-table {
     font-size: 12px;
+    min-width: 600px; /* ✅ Minimum width for horizontal scroll */
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 10px;
+  }
+
+  .data-table th {
+    font-size: 11px;
+  }
+
+  .date-cell {
+    font-size: 12px;
+  }
+
+  .notes-cell {
+    max-width: 150px;
+    font-size: 11px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .summary-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .summary-icon {
+    font-size: 28px;
+  }
+
+  .summary-content h3 {
+    font-size: 11px;
+  }
+
+  .summary-value {
+    font-size: 18px;
+  }
+
+  .filter-btn {
+    padding: 11px 16px;
+    font-size: 13px;
+  }
+
+  .data-table {
+    font-size: 11px;
+    min-width: 550px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 8px;
+  }
+
+  .data-table th {
+    font-size: 10px;
+  }
+
+  .date-cell {
+    font-size: 11px;
+  }
+
+  .notes-cell {
+    max-width: 120px;
+    font-size: 10px;
+  }
+}
+
+/* ✅ Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .date-filters {
+    flex-direction: row;
+  }
+
+  .filter-btn {
+    width: auto;
+    flex: 1;
   }
 }

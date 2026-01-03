@@ -48,3 +48,11 @@ code {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
 }
+
+/* ✅ Mobile: Thinner scrollbar */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+}

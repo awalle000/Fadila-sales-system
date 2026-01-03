@@ -161,16 +161,186 @@
   color: #999;
 }
 
-@media (max-width: 768px) {
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
   .login-card {
-    padding: 32px 24px;
+    padding: 40px;
+    max-width: 450px;
+  }
+
+  .login-icon {
+    font-size: 56px;
   }
 
   .login-title {
     font-size: 28px;
   }
 
+  .login-subtitle {
+    font-size: 15px;
+  }
+
+  .circle-1 {
+    width: 350px;
+    height: 350px;
+  }
+
+  .circle-2 {
+    width: 250px;
+    height: 250px;
+  }
+
+  .circle-3 {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* ✅ Mobile Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 32px 24px;
+    border-radius: 20px;
+    max-width: 420px;
+  }
+
+  .login-header {
+    margin-bottom: 32px;
+  }
+
   .login-icon {
     font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .login-title {
+    font-size: 26px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+  }
+
+  .login-form {
+    margin-bottom: 28px;
+  }
+
+  .login-footer {
+    padding-top: 20px;
+  }
+
+  .demo-credentials {
+    padding: 14px;
+  }
+
+  .demo-credentials h4 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .demo-credentials p {
+    font-size: 12px;
+  }
+
+  .login-version {
+    font-size: 11px;
+  }
+
+  .circle-1 {
+    width: 300px;
+    height: 300px;
+    top: -80px;
+    right: -80px;
+  }
+
+  .circle-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -60px;
+    left: -60px;
+  }
+
+  .circle-3 {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+
+  .login-header {
+    margin-bottom: 28px;
+  }
+
+  .login-icon {
+    font-size: 44px;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+  }
+
+  .demo-credentials {
+    padding: 12px;
+  }
+
+  .demo-credentials h4 {
+    font-size: 12px;
+  }
+
+  .demo-credentials p {
+    font-size: 11px;
+  }
+
+  .circle-1,
+  .circle-2 {
+    display: none; /* ✅ Hide on very small screens for performance */
+  }
+
+  .circle-3 {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* ✅ Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .login-container {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 24px 28px;
+    max-width: 500px;
+  }
+
+  .login-header {
+    margin-bottom: 24px;
+  }
+
+  .login-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .login-title {
+    font-size: 24px;
   }
 }

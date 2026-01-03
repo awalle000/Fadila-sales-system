@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { getMonthlyReport } from '../../../services/salesService';
 import { getCurrentYear, getCurrentMonth } from '../../../utils/formatDate';
-import SalesChart from '../../../components/charts/SalesChart/SalesChart';
-import ProfitChart from '../../../components/charts/ProfitChart/ProfitChart';
 import Button from '../../../components/common/Button/Button';
 import Loader from '../../../components/common/Loader/Loader';
 import toast from 'react-hot-toast';
@@ -24,9 +22,14 @@ const MonthlyReport = () => {
     try {
       const data = await getMonthlyReport(selectedYear, selectedMonth);
       setReport(data);
+      
+      if (!data || (data.productBreakdown && data.productBreakdown.length === 0)) {
+        toast.info('No sales data found for this month');
+      }
     } catch (error) {
       toast.error('Failed to load monthly report');
       console.error('Report error:', error);
+      setReport(null);
     } finally {
       setLoading(false);
     }
@@ -85,7 +88,7 @@ const MonthlyReport = () => {
               <div className="summary-icon">🧾</div>
               <div className="summary-content">
                 <h3>Transactions</h3>
-                <div className="summary-value">{report.summary.totalTransactions}</div>
+                <div className="summary-value">{report.summary?.totalTransactions || 0}</div>
               </div>
             </div>
 
@@ -93,7 +96,7 @@ const MonthlyReport = () => {
               <div className="summary-icon">📦</div>
               <div className="summary-content">
                 <h3>Items Sold</h3>
-                <div className="summary-value">{report.summary.totalItemsSold}</div>
+                <div className="summary-value">{report.summary?.totalItemsSold || 0}</div>
               </div>
             </div>
 
@@ -101,7 +104,7 @@ const MonthlyReport = () => {
               <div className="summary-icon">💰</div>
               <div className="summary-content">
                 <h3>Revenue</h3>
-                <div className="summary-value">{report.summary.totalRevenue}</div>
+                <div className="summary-value">{report.summary?.totalRevenue || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -109,7 +112,7 @@ const MonthlyReport = () => {
               <div className="summary-icon">💵</div>
               <div className="summary-content">
                 <h3>Cost</h3>
-                <div className="summary-value cost">{report.summary.totalCost}</div>
+                <div className="summary-value cost">{report.summary?.totalCost || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -117,7 +120,7 @@ const MonthlyReport = () => {
               <div className="summary-icon">📈</div>
               <div className="summary-content">
                 <h3>Profit</h3>
-                <div className="summary-value profit">{report.summary.totalProfit}</div>
+                <div className="summary-value profit">{report.summary?.totalProfit || 'GH₵ 0.00'}</div>
               </div>
             </div>
 
@@ -125,57 +128,50 @@ const MonthlyReport = () => {
               <div className="summary-icon">📊</div>
               <div className="summary-content">
                 <h3>Profit Margin</h3>
-                <div className="summary-value">{report.summary.profitMargin}</div>
+                <div className="summary-value">{report.summary?.profitMargin || '0%'}</div>
               </div>
             </div>
           </div>
 
-          {/* Daily Breakdown Chart */}
-          {report.dailyBreakdown && report.dailyBreakdown.length > 0 && (
-            <div className="report-section">
-              <SalesChart data={report.dailyBreakdown} title="Daily Sales Trend" />
-            </div>
-          )}
-
           {/* Product Breakdown */}
-          {report.productBreakdown && report.productBreakdown.length > 0 && (
-            <>
-              <div className="report-section">
-                <ProfitChart data={report.productBreakdown} title="Product Performance" />
-              </div>
-
-              <div className="report-section">
-                <h2 className="section-title">📦 Product Breakdown</h2>
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th>Quantity Sold</th>
-                        <th>Revenue</th>
-                        <th>Profit</th>
+          {report.productBreakdown && report.productBreakdown.length > 0 ? (
+            <div className="report-section">
+              <h2 className="section-title">📦 Product Breakdown</h2>
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Quantity Sold</th>
+                      <th>Revenue</th>
+                      <th>Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.productBreakdown.map((product, index) => (
+                      <tr key={index}>
+                        <td className="product-name">{product.productName}</td>
+                        <td>{product.quantitySold}</td>
+                        <td className="revenue">{product.revenue}</td>
+                        <td className="profit">{product.profit}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {report.productBreakdown.map((product, index) => (
-                        <tr key={index}>
-                          <td className="product-name">{product.productName}</td>
-                          <td>{product.quantitySold}</td>
-                          <td className="revenue">{product.revenue}</td>
-                          <td className="profit">{product.profit}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </>
+            </div>
+          ) : (
+            <div className="no-data-message">
+              <p>📊 No sales recorded for this month</p>
+            </div>
           )}
 
           {/* Status Badge */}
-          <div className={`status-banner ${report.summary.isProfitable ? 'profitable' : 'loss'}`}>
-            {report.summary.isProfitable ? '✅ Profitable Month' : '⚠️ Loss Month'}
-          </div>
+          {report.summary && (
+            <div className={`status-banner ${report.summary.isProfitable ? 'profitable' : 'loss'}`}>
+              {report.summary.isProfitable ? '✅ Profitable Month' : '⚠️ Loss Month'}
+            </div>
+          )}
         </>
       )}
 

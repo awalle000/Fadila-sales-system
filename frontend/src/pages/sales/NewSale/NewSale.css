@@ -12,6 +12,7 @@
   font-size: 13px;
   color: #666;
   font-style: italic;
+  line-height: 1.4;
 }
 
 .sale-summary {
@@ -35,6 +36,7 @@
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   font-size: 15px;
+  gap: 12px; /* ✅ Spacing between label and value */
 }
 
 .summary-row:last-child {
@@ -57,6 +59,8 @@
 .summary-row .value {
   font-weight: 700;
   color: #667eea;
+  word-break: break-word; /* ✅ Prevents overflow */
+  text-align: right;
 }
 
 .summary-row.total .value {
@@ -69,8 +73,585 @@
   font-size: 20px;
 }
 
+/* ✅ Two-column layout */
+.sale-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* ✅ Section title */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 1.5rem 0;
+}
+
+/* ✅ Cart styles */
+.cart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.empty-cart p {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.cart-items {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+  gap: 1rem; /* ✅ Spacing */
+}
+
+.cart-item:hover {
+  background: #f8f9fa;
+}
+
+.item-details {
+  flex: 1;
+  min-width: 0; /* ✅ Allows text to shrink */
+}
+
+.item-details h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  word-break: break-word; /* ✅ Prevents overflow */
+}
+
+.item-details p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.item-total {
+  font-weight: bold;
+  color: #2563eb;
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.remove-btn:hover {
+  background: #dc2626;
+}
+
+.remove-btn:active {
+  transform: scale(0.95);
+}
+
+.cart-summary {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.cart-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: none;
+}
+
+.cart-summary .summary-row.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2563eb;
+  border-top: 2px solid #ddd;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.cart-summary .summary-row.profit {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.cart-summary .summary-row.discount {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.cart-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.cart-actions button {
+  flex: 1;
+}
+
+/* ✅ Receipt Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content.receipt-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.receipt {
+  font-family: 'Courier New', monospace;
+  padding: 2rem;
+  background: white;
+}
+
+.receipt .header {
+  text-align: center;
+  border-bottom: 2px dashed #000;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.receipt .header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.receipt .header p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.receipt .items {
+  margin-bottom: 1.5rem;
+}
+
+.receipt .item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+  gap: 1rem; /* ✅ Spacing */
+}
+
+.receipt .item:last-child {
+  border-bottom: none;
+}
+
+.receipt .totals {
+  border-top: 2px dashed #000;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.receipt .totals .item {
+  border-bottom: none;
+  font-size: 1.1rem;
+}
+
+.receipt .footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #000;
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  background: #f8f9fa;
+  flex-wrap: wrap; /* ✅ Wraps on small screens */
+}
+
+.modal-actions button {
+  flex: 1;
+  min-width: 120px; /* ✅ Minimum button width */
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .receipt, .receipt * {
+    visibility: visible;
+  }
+  .receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+/* ✅ Sale Preview with Discount */
+.sale-preview {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  gap: 1rem; /* ✅ Spacing */
+}
+
+.preview-row.discount {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.preview-row.final {
+  border-top: 2px solid #dee2e6;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+/* ✅ Cart Item Discount Styling */
+.item-discount {
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.item-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* ✅ Receipt Discount Line */
+.discount-line {
+  color: #ef4444;
+  font-size: 0.9em;
+  padding: 2px 0;
+}
+
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .sale-layout {
+    gap: 1.5rem;
+  }
+
+  .sale-form-container,
+  .cart-container {
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+  }
+}
+
+/* ✅ Mobile Responsive */
+@media (max-width: 968px) {
+  .sale-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .sale-form-container {
     padding: 20px;
+    border-radius: 10px;
+  }
+
+  .sale-summary {
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .sale-summary h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .summary-row {
+    padding: 10px 0;
+    font-size: 14px;
+  }
+
+  .summary-row.total {
+    font-size: 16px;
+  }
+
+  .summary-row.total .value {
+    font-size: 20px;
+  }
+
+  .summary-row.profit .value {
+    font-size: 18px;
+  }
+
+  .help-text {
+    font-size: 12px;
+  }
+
+  .sale-layout {
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .cart-container {
+    padding: 1.5rem;
+  }
+
+  .empty-cart {
+    padding: 2rem 1rem;
+  }
+
+  .empty-cart p {
+    font-size: 1rem;
+  }
+
+  .cart-items {
+    max-height: 350px;
+    margin-bottom: 1.25rem;
+  }
+
+  .cart-item {
+    padding: 0.875rem;
+    flex-wrap: wrap;
+  }
+
+  .item-details h4 {
+    font-size: 0.95rem;
+  }
+
+  .item-details p {
+    font-size: 0.85rem;
+  }
+
+  .item-total {
+    font-size: 1rem;
+  }
+
+  .remove-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+  }
+
+  .cart-summary {
+    padding: 0.875rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .cart-summary .summary-row.total {
+    font-size: 1.1rem;
+  }
+
+  .cart-actions {
+    gap: 0.75rem;
+    flex-direction: column;
+  }
+
+  .cart-actions button {
+    width: 100%;
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content.receipt-modal {
+    max-height: 95vh;
+    border-radius: 10px;
+  }
+
+  .receipt {
+    padding: 1.5rem;
+  }
+
+  .receipt .header h2 {
+    font-size: 1.3rem;
+  }
+
+  .receipt .header p {
+    font-size: 0.85rem;
+  }
+
+  .receipt .item {
+    padding: 0.65rem 0;
+    font-size: 0.9rem;
+  }
+
+  .receipt .totals .item {
+    font-size: 1rem;
+  }
+
+  .receipt .footer {
+    font-size: 0.85rem;
+  }
+
+  .modal-actions {
+    padding: 1.25rem;
+    gap: 0.75rem;
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .sale-preview {
+    padding: 0.875rem;
+  }
+
+  .preview-row {
+    font-size: 0.95rem;
+  }
+
+  .preview-row.final {
+    font-size: 1.1rem;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .sale-form-container {
+    padding: 16px;
+  }
+
+  .sale-summary {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .sale-summary h3 {
+    font-size: 15px;
+  }
+
+  .summary-row {
+    padding: 8px 0;
+    font-size: 13px;
+  }
+
+  .summary-row.total {
+    font-size: 15px;
+  }
+
+  .summary-row.total .value {
+    font-size: 18px;
+  }
+
+  .summary-row.profit .value {
+    font-size: 16px;
+  }
+
+  .sale-layout {
+    gap: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .cart-container {
+    padding: 1.25rem;
+  }
+
+  .cart-item {
+    padding: 0.75rem;
+  }
+
+  .item-details h4 {
+    font-size: 0.9rem;
+  }
+
+  .item-total {
+    font-size: 0.95rem;
+  }
+
+  .remove-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .receipt {
+    padding: 1.25rem;
+  }
+
+  .receipt .header h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal-actions {
+    padding: 1rem;
   }
 }

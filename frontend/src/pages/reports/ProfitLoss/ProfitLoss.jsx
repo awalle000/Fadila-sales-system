@@ -27,11 +27,16 @@ const ProfitLoss = () => {
 
     setLoading(true);
     try {
-      const data = await getProfitLossReport(startDate, endDate, parseFloat(expenses));
+      const data = await getProfitLossReport(startDate, endDate, parseFloat(expenses) || 0);
       setReport(data);
+      
+      if (!data) {
+        toast.info('No sales data found for this period');
+      }
     } catch (error) {
       toast.error('Failed to load profit/loss report');
       console.error('Report error:', error);
+      setReport(null);
     } finally {
       setLoading(false);
     }
@@ -60,6 +65,7 @@ const ProfitLoss = () => {
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           max={getTodayDate()}
+          min={startDate}
         />
 
         <Input
@@ -88,11 +94,11 @@ const ProfitLoss = () => {
             <h2>💰 Revenue</h2>
             <div className="statement-row">
               <span>Total Sales</span>
-              <span className="amount">{report.revenue.totalSales}</span>
+              <span className="amount">{report.revenue?.totalSales || 'GH₵ 0.00'}</span>
             </div>
             <div className="statement-row total">
               <span>Total Revenue</span>
-              <span className="amount">{report.revenue.totalSales}</span>
+              <span className="amount">{report.revenue?.totalSales || 'GH₵ 0.00'}</span>
             </div>
           </div>
 
@@ -101,15 +107,15 @@ const ProfitLoss = () => {
             <h2>💵 Costs & Expenses</h2>
             <div className="statement-row">
               <span>Cost of Goods Sold</span>
-              <span className="amount">{report.costs.costOfGoodsSold}</span>
+              <span className="amount">{report.costs?.costOfGoodsSold || 'GH₵ 0.00'}</span>
             </div>
             <div className="statement-row">
               <span>Operating Expenses</span>
-              <span className="amount">{report.costs.operatingExpenses}</span>
+              <span className="amount">{report.costs?.operatingExpenses || 'GH₵ 0.00'}</span>
             </div>
             <div className="statement-row total">
               <span>Total Costs</span>
-              <span className="amount">{report.costs.totalCosts}</span>
+              <span className="amount">{report.costs?.totalCosts || 'GH₵ 0.00'}</span>
             </div>
           </div>
 
@@ -118,24 +124,26 @@ const ProfitLoss = () => {
             <h2>📈 Profit Analysis</h2>
             <div className="statement-row">
               <span>Gross Profit</span>
-              <span className="amount">{report.profit.grossProfit}</span>
+              <span className="amount">{report.profit?.grossProfit || 'GH₵ 0.00'}</span>
             </div>
             <div className="statement-row">
               <span>Profit Margin</span>
-              <span className="amount">{report.profit.profitMargin}</span>
+              <span className="amount">{report.profit?.profitMargin || '0%'}</span>
             </div>
-            <div className={`statement-row net-profit ${report.profit.isProfitable ? 'profitable' : 'loss'}`}>
+            <div className={`statement-row net-profit ${report.profit?.isProfitable ? 'profitable' : 'loss'}`}>
               <span>Net Profit</span>
-              <span className="amount">{report.profit.netProfit}</span>
+              <span className="amount">{report.profit?.netProfit || 'GH₵ 0.00'}</span>
             </div>
           </div>
 
           {/* Status Banner */}
-          <div className={`status-banner ${report.profit.status.toLowerCase()}`}>
-            {report.profit.status === 'PROFIT' && '✅ PROFIT'}
-            {report.profit.status === 'LOSS' && '⚠️ LOSS'}
-            {report.profit.status === 'BREAK-EVEN' && '➖ BREAK-EVEN'}
-          </div>
+          {report.profit?.status && (
+            <div className={`status-banner ${report.profit.status.toLowerCase()}`}>
+              {report.profit.status === 'PROFIT' && '✅ PROFIT'}
+              {report.profit.status === 'LOSS' && '⚠️ LOSS'}
+              {report.profit.status === 'BREAK-EVEN' && '➖ BREAK-EVEN'}
+            </div>
+          )}
         </div>
       )}
 

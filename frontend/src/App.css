@@ -54,6 +54,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .page-subtitle {
@@ -62,31 +63,61 @@ body {
   margin: 0;
 }
 
-/* Responsive */
+/* ✅ Tablet Responsive */
 @media (max-width: 1024px) {
   .page-container {
     padding: 24px;
+    max-width: 100%;
   }
 
   .page-title {
     font-size: 28px;
   }
+
+  .page-subtitle {
+    font-size: 15px;
+  }
 }
 
+/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
+  }
+
+  .app-main {
+    min-height: calc(100vh - 60px);
   }
 
   .page-container {
     padding: 16px;
   }
 
+  .page-header {
+    margin-bottom: 20px;
+  }
+
   .page-title {
-    font-size: 24px;
+    font-size: 22px;
+    gap: 8px;
   }
 
   .page-subtitle {
     font-size: 14px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
   }
 }

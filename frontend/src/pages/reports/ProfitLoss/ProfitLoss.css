@@ -57,10 +57,23 @@
   padding: 16px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 16px;
+  gap: 16px; /* ✅ Spacing between label and amount */
 }
 
 .statement-row:last-child {
   border-bottom: none;
+}
+
+.statement-row span:first-child {
+  flex: 1;
+  word-break: break-word; /* ✅ Prevents overflow */
+}
+
+.statement-row .amount {
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+  word-break: break-word; /* ✅ Allows breaking if too long */
 }
 
 .statement-row.total {
@@ -69,6 +82,10 @@
   padding-top: 20px;
   margin-top: 12px;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.statement-row.total .amount {
+  font-size: 20px;
 }
 
 .statement-row.net-profit {
@@ -83,15 +100,6 @@
 
 .statement-row.net-profit.loss {
   color: #c62828;
-}
-
-.statement-row .amount {
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.statement-row.total .amount {
-  font-size: 20px;
 }
 
 .statement-row.net-profit .amount {
@@ -116,24 +124,186 @@
   border: 3px solid #ffc107;
 }
 
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .report-controls-grid {
+    padding: 28px;
+    gap: 18px;
+  }
+
+  .profit-loss-statement {
+    padding: 28px;
+  }
+
+  .statement-section {
+    padding: 20px;
+  }
+
+  .statement-section h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .statement-row {
+    padding: 14px 0;
+    font-size: 15px;
+  }
+
+  .statement-row .amount {
+    font-size: 17px;
+  }
+
+  .statement-row.total {
+    font-size: 17px;
+  }
+
+  .statement-row.total .amount {
+    font-size: 19px;
+  }
+
+  .statement-row.net-profit {
+    font-size: 22px;
+  }
+
+  .statement-row.net-profit .amount {
+    font-size: 26px;
+  }
+}
+
+/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
   .report-controls-grid {
     grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .button-wrapper {
+    align-items: stretch;
+  }
+
+  .button-wrapper button {
+    width: 100%;
   }
 
   .profit-loss-statement {
     padding: 20px;
+    border-radius: 10px;
   }
 
   .statement-section {
-    padding: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+
+  .statement-section h2 {
+    font-size: 17px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
   }
 
   .statement-row {
+    padding: 12px 0;
     font-size: 14px;
+    gap: 12px;
+    flex-wrap: wrap; /* ✅ Allows wrapping on very small screens */
+  }
+
+  .statement-row .amount {
+    font-size: 16px;
+  }
+
+  .statement-row.total {
+    padding-top: 16px;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  .statement-row.total .amount {
+    font-size: 18px;
   }
 
   .statement-row.net-profit {
     font-size: 20px;
+    padding: 20px 0;
+    margin-top: 14px;
+  }
+
+  .statement-row.net-profit .amount {
+    font-size: 24px;
+  }
+
+  .status-banner {
+    padding: 16px;
+    font-size: 16px;
+    margin-top: 24px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .report-controls-grid {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .profit-loss-statement {
+    padding: 16px;
+  }
+
+  .statement-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .statement-section h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .statement-row {
+    padding: 10px 0;
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .statement-row .amount {
+    font-size: 15px;
+  }
+
+  .statement-row.total {
+    font-size: 15px;
+    padding-top: 14px;
+  }
+
+  .statement-row.total .amount {
+    font-size: 17px;
+  }
+
+  .statement-row.net-profit {
+    font-size: 18px;
+    padding: 18px 0;
+  }
+
+  .statement-row.net-profit .amount {
+    font-size: 22px;
+  }
+
+  .status-banner {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+/* ✅ Very Small Screens - Stack amounts below labels */
+@media (max-width: 360px) {
+  .statement-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .statement-row .amount {
+    align-self: flex-end;
   }
 }

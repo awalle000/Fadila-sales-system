@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { getAllProducts } from '../../../services/productService';
@@ -15,10 +15,16 @@ const NewSale = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [notes, setNotes] = useState('');
+  const [discount, setDiscount] = useState(''); // ✅ NEW: Discount state
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  const [cart, setCart] = useState([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
+  const receiptRef = useRef();
+  
   const navigate = useNavigate();
   const isCEO = user?.role === 'ceo';
 
@@ -61,65 +67,179 @@ const NewSale = () => {
     return products.find(p => p._id === selectedProduct);
   };
 
-  const calculateSaleDetails = () => {
-    const product = getSelectedProductDetails();
-    if (!product || !quantity) return null;
+  // ✅ Add item to cart with discount
+  const addToCart = () => {
+    if (!selectedProduct || !quantity) {
+      toast.error('Please select a product and quantity');
+      return;
+    }
 
-    const qty = parseInt(quantity);
-    const totalRevenue = calculateTotalRevenue(product.sellingPrice, qty);
-    const profit = calculateProfit(product.costPrice, product.sellingPrice, qty);
-
-    return {
-      totalRevenue,
-      profit,
-      available: product.quantityInStock
-    };
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
     const product = getSelectedProductDetails();
     const qty = parseInt(quantity);
+    const discountAmount = parseFloat(discount) || 0;
 
     if (qty > product.quantityInStock) {
       toast.error(`Insufficient stock! Only ${product.quantityInStock} ${product.unit} available`);
       return;
     }
 
+    const totalAmount = calculateTotalRevenue(product.sellingPrice, qty);
+
+    // ✅ Validate discount
+    if (discountAmount < 0) {
+      toast.error('Discount cannot be negative');
+      return;
+    }
+
+    if (discountAmount > totalAmount) {
+      toast.error('Discount cannot exceed total amount');
+      return;
+    }
+
+    const finalAmount = totalAmount - discountAmount;
+    const totalCost = product.costPrice * qty;
+    const profit = finalAmount - totalCost;
+
+    // Check if product already in cart
+    const existingIndex = cart.findIndex(item => item.productId === selectedProduct);
+    
+    if (existingIndex >= 0) {
+      toast.error('Product already in cart. Remove it first to add with different quantity/discount.');
+      return;
+    }
+
+    // Add new item
+    const cartItem = {
+      productId: product._id,
+      productName: product.name,
+      quantity: qty,
+      unitPrice: product.sellingPrice,
+      costPrice: product.costPrice,
+      unit: product.unit,
+      totalAmount,
+      discount: discountAmount,
+      finalAmount,
+      profit
+    };
+    
+    setCart([...cart, cartItem]);
+    toast.success(`${product.name} added to cart`);
+
+    // Reset form
+    setSelectedProduct('');
+    setQuantity('');
+    setDiscount('');
+    setSearchTerm('');
+  };
+
+  // ✅ Remove item from cart
+  const removeFromCart = (productId) => {
+    setCart(cart.filter(item => item.productId !== productId));
+    toast.success('Item removed from cart');
+  };
+
+  // ✅ Calculate cart totals
+  const getCartTotals = () => {
+    const totalAmount = cart.reduce((sum, item) => sum + item.totalAmount, 0);
+    const totalDiscount = cart.reduce((sum, item) => sum + item.discount, 0);
+    const finalAmount = cart.reduce((sum, item) => sum + item.finalAmount, 0);
+    const totalProfit = cart.reduce((sum, item) => sum + item.profit, 0);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    return { totalAmount, totalDiscount, finalAmount, totalProfit, totalItems };
+  };
+
+  // ✅ Complete sale (record all items)
+  const completeSale = async () => {
+    if (cart.length === 0) {
+      toast.error('Cart is empty!');
+      return;
+    }
+
     setSaving(true);
 
     try {
-      await recordSale({
-        productId: selectedProduct,
-        quantitySold: qty,
-        notes
+      // Record each item as a separate sale
+      const salePromises = cart.map(item =>
+        recordSale({
+          productId: item.productId,
+          quantitySold: item.quantity,
+          discount: item.discount,
+          notes: `Multi-item sale - ${cart.length} products`
+        })
+      );
+
+      const sales = await Promise.all(salePromises);
+
+      // Prepare receipt data
+      const totals = getCartTotals();
+      setReceiptData({
+        items: cart,
+        totals,
+        saleDate: new Date(),
+        soldBy: user.name,
+        receiptNumber: `RCP-${Date.now()}`
       });
 
-      toast.success('Sale recorded successfully!');
-      navigate('/sales/history');
+      setShowReceipt(true);
+      setCart([]); // Clear cart
+      fetchProducts(); // Refresh product stock
+      
+      toast.success('Sale completed successfully!');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to record sale');
+      toast.error(error.response?.data?.message || 'Failed to complete sale');
     } finally {
       setSaving(false);
     }
+  };
+
+  // ✅ Print receipt
+  const handlePrint = () => {
+    const printContent = receiptRef.current;
+    const windowPrint = window.open('', '', 'width=800,height=600');
+    windowPrint.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${receiptData?.receiptNumber}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; padding: 20px; }
+            .receipt { max-width: 400px; margin: 0 auto; }
+            .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+            .item { display: flex; justify-content: space-between; padding: 5px 0; }
+            .discount-line { color: #ef4444; font-size: 0.9em; }
+            .totals { border-top: 2px dashed #000; margin-top: 10px; padding-top: 10px; font-weight: bold; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    windowPrint.document.close();
+    windowPrint.focus();
+    windowPrint.print();
+    windowPrint.close();
   };
 
   if (loading) {
     return <Loader fullScreen />;
   }
 
-  const saleDetails = calculateSaleDetails();
+  const cartTotals = getCartTotals();
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">💰 New Sale</h1>
-        <p className="page-subtitle">Record a new sales transaction</p>
+        <p className="page-subtitle">Add products to cart and complete sale</p>
       </div>
 
-      <div className="sale-form-container">
-        <form onSubmit={handleSubmit}>
+      <div className="sale-layout">
+        {/* Left: Add Products */}
+        <div className="sale-form-container">
+          <h2 className="section-title">Add Products</h2>
+          
           {/* Search Bar */}
           <div className="input-group">
             <label htmlFor="search" className="input-label">
@@ -150,9 +270,9 @@ const NewSale = () => {
               onChange={(e) => {
                 setSelectedProduct(e.target.value);
                 setQuantity('');
+                setDiscount('');
               }}
               className="input-field"
-              required
             >
               <option value="">-- Select a product --</option>
               {filteredProducts.length > 0 ? (
@@ -165,11 +285,6 @@ const NewSale = () => {
                 <option value="" disabled>No products found</option>
               )}
             </select>
-            {filteredProducts.length === 0 && searchTerm && (
-              <small className="help-text error">
-                No products match "{searchTerm}". Try a different search term.
-              </small>
-            )}
           </div>
 
           {selectedProduct && (
@@ -187,68 +302,236 @@ const NewSale = () => {
                   min="1"
                   max={getSelectedProductDetails()?.quantityInStock}
                   className="input-field"
-                  required
                 />
                 <small className="help-text">
                   Available: {getSelectedProductDetails()?.quantityInStock} {getSelectedProductDetails()?.unit}
                 </small>
               </div>
 
+              {/* ✅ NEW: Discount Input */}
               <div className="input-group">
-                <label htmlFor="notes" className="input-label">
-                  Notes (Optional)
+                <label htmlFor="discount" className="input-label">
+                  💸 Discount (Optional)
                 </label>
-                <textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add any notes about this sale"
-                  className="input-field textarea"
-                  rows="3"
+                <input
+                  type="number"
+                  id="discount"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  placeholder="Enter discount amount (GH₵)"
+                  min="0"
+                  max={quantity ? calculateTotalRevenue(getSelectedProductDetails()?.sellingPrice, parseInt(quantity)) : 0}
+                  step="0.01"
+                  className="input-field"
                 />
+                <small className="help-text">
+                  {discount && quantity ? `You're giving ${formatCedis(parseFloat(discount))} discount` : 'Enter amount to reduce from total (e.g., 20 for GH₵ 20 off)'}
+                </small>
               </div>
 
-              {saleDetails && (
-                <div className="sale-summary">
-                  <h3>Sale Summary</h3>
-                  <div className="summary-row">
-                    <span>Product:</span>
-                    <span className="value">{getSelectedProductDetails().name}</span>
+              {/* ✅ Sale Preview with Discount */}
+              {quantity && (
+                <div className="sale-preview">
+                  <div className="preview-row">
+                    <span>Subtotal:</span>
+                    <span>{formatCedis(calculateTotalRevenue(getSelectedProductDetails().sellingPrice, parseInt(quantity)))}</span>
                   </div>
-                  <div className="summary-row">
-                    <span>Unit Price:</span>
-                    <span className="value">{formatCedis(getSelectedProductDetails().sellingPrice)}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span>Quantity:</span>
-                    <span className="value">{quantity} {getSelectedProductDetails().unit}</span>
-                  </div>
-                  <div className="summary-row total">
-                    <span>Total Amount:</span>
-                    <span className="value">{formatCedis(saleDetails.totalRevenue)}</span>
-                  </div>
-                  {/* ✅ Only show profit to CEO */}
-                  {isCEO && (
-                    <div className="summary-row profit">
-                      <span>Expected Profit:</span>
-                      <span className="value">{formatCedis(saleDetails.profit)}</span>
+                  {discount && parseFloat(discount) > 0 && (
+                    <div className="preview-row discount">
+                      <span>Discount:</span>
+                      <span>- {formatCedis(parseFloat(discount))}</span>
                     </div>
                   )}
+                  <div className="preview-row final">
+                    <span>Final Price:</span>
+                    <span>{formatCedis(calculateTotalRevenue(getSelectedProductDetails().sellingPrice, parseInt(quantity)) - (parseFloat(discount) || 0))}</span>
+                  </div>
                 </div>
               )}
             </>
           )}
 
-          <div className="form-actions">
-            <Button type="button" variant="secondary" onClick={() => navigate('/sales/history')}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="success" loading={saving} disabled={!selectedProduct || !quantity}>
-              Record Sale
-            </Button>
-          </div>
-        </form>
+          <Button 
+            type="button" 
+            variant="primary" 
+            onClick={addToCart}
+            disabled={!selectedProduct || !quantity}
+            fullWidth
+          >
+            ➕ Add to Cart
+          </Button>
+        </div>
+
+        {/* Right: Shopping Cart */}
+        <div className="cart-container">
+          <h2 className="section-title">Shopping Cart ({cart.length})</h2>
+          
+          {cart.length === 0 ? (
+            <div className="empty-cart">
+              <p>🛒 Cart is empty</p>
+              <small>Add products to start a sale</small>
+            </div>
+          ) : (
+            <>
+              <div className="cart-items">
+                {cart.map((item, index) => (
+                  <div key={index} className="cart-item">
+                    <div className="item-details">
+                      <h4>{item.productName}</h4>
+                      <p>{item.quantity} {item.unit} × {formatCedis(item.unitPrice)}</p>
+                      {item.discount > 0 && (
+                        <p className="item-discount">Discount: -{formatCedis(item.discount)}</p>
+                      )}
+                    </div>
+                    <div className="item-actions">
+                      <div className="item-pricing">
+                        {item.discount > 0 && (
+                          <span className="original-price">{formatCedis(item.totalAmount)}</span>
+                        )}
+                        <span className="item-total">{formatCedis(item.finalAmount)}</span>
+                      </div>
+                      <button 
+                        className="remove-btn"
+                        onClick={() => removeFromCart(item.productId)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cart-summary">
+                <div className="summary-row">
+                  <span>Total Items:</span>
+                  <span>{cartTotals.totalItems}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Subtotal:</span>
+                  <span>{formatCedis(cartTotals.totalAmount)}</span>
+                </div>
+                {cartTotals.totalDiscount > 0 && (
+                  <div className="summary-row discount">
+                    <span>Total Discount:</span>
+                    <span>-{formatCedis(cartTotals.totalDiscount)}</span>
+                  </div>
+                )}
+                <div className="summary-row total">
+                  <span>Final Amount:</span>
+                  <span>{formatCedis(cartTotals.finalAmount)}</span>
+                </div>
+                {isCEO && (
+                  <div className="summary-row profit">
+                    <span>Expected Profit:</span>
+                    <span>{formatCedis(cartTotals.totalProfit)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="cart-actions">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setCart([])}
+                >
+                  Clear Cart
+                </Button>
+                <Button 
+                  variant="success" 
+                  onClick={completeSale}
+                  loading={saving}
+                >
+                  Complete Sale
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* ✅ Receipt Modal with Discount */}
+      {showReceipt && receiptData && (
+        <div className="modal-overlay" onClick={() => setShowReceipt(false)}>
+          <div className="modal-content receipt-modal" onClick={(e) => e.stopPropagation()}>
+            <div ref={receiptRef} className="receipt">
+              <div className="header">
+                <h2>SALES RECEIPT</h2>
+                <p><strong>Fadila Enterprise</strong></p>
+                <p>Receipt #: {receiptData.receiptNumber}</p>
+                <p>{new Date(receiptData.saleDate).toLocaleString()}</p>
+                <p>Sold by: {receiptData.soldBy}</p>
+              </div>
+
+              <div className="items">
+                {receiptData.items.map((item, index) => (
+                  <div key={index}>
+                    <div className="item">
+                      <div>
+                        <strong>{item.productName}</strong>
+                        <br />
+                        <small>{item.quantity} {item.unit} × {formatCedis(item.unitPrice)}</small>
+                      </div>
+                      <div>{formatCedis(item.totalAmount)}</div>
+                    </div>
+                    {item.discount > 0 && (
+                      <div className="item discount-line">
+                        <div>Discount</div>
+                        <div>-{formatCedis(item.discount)}</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="totals">
+                <div className="item">
+                  <span>Total Items:</span>
+                  <span>{receiptData.totals.totalItems}</span>
+                </div>
+                <div className="item">
+                  <span>Subtotal:</span>
+                  <span>{formatCedis(receiptData.totals.totalAmount)}</span>
+                </div>
+                {receiptData.totals.totalDiscount > 0 && (
+                  <div className="item discount-line">
+                    <span>Total Discount:</span>
+                    <span>-{formatCedis(receiptData.totals.totalDiscount)}</span>
+                  </div>
+                )}
+                <div className="item">
+                  <span><strong>TOTAL AMOUNT:</strong></span>
+                  <span><strong>{formatCedis(receiptData.totals.finalAmount)}</strong></span>
+                </div>
+                {receiptData.totals.totalDiscount > 0 && (
+                  <div className="item" style={{fontSize: '0.9em', color: '#10b981'}}>
+                    <span>You Saved:</span>
+                    <span>{formatCedis(receiptData.totals.totalDiscount)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="footer">
+                <p>Thank you for your business!</p>
+                <p>Visit us again soon 😊</p>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <Button variant="secondary" onClick={() => setShowReceipt(false)}>
+                Close
+              </Button>
+              <Button variant="primary" onClick={handlePrint}>
+                🖨️ Print Receipt
+              </Button>
+              <Button variant="success" onClick={() => {
+                setShowReceipt(false);
+                navigate('/sales/history');
+              }}>
+                View Sales History
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

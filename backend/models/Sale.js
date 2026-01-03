@@ -25,6 +25,17 @@ const saleSchema = new mongoose.Schema({
     required: true,
     min: [0, 'Total amount cannot be negative']
   },
+  // ✅ NEW: Discount fields
+  discount: {
+    type: Number,
+    default: 0,
+    min: [0, 'Discount cannot be negative']
+  },
+  finalAmount: {
+    type: Number,
+    required: true,
+    min: [0, 'Final amount cannot be negative']
+  },
   costPrice: {
     type: Number,
     required: true,

@@ -11,6 +11,7 @@
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
+  padding: 16px; /* ✅ Padding for mobile */
 }
 
 @keyframes fadeIn {
@@ -63,6 +64,7 @@
   align-items: center;
   padding: 24px;
   border-bottom: 1px solid #e0e0e0;
+  gap: 16px; /* ✅ Spacing between title and close button */
 }
 
 .modal-title {
@@ -70,6 +72,9 @@
   font-size: 24px;
   font-weight: 700;
   color: #333;
+  flex: 1;
+  min-width: 0; /* ✅ Allows text to shrink */
+  word-break: break-word; /* ✅ Prevents overflow */
 }
 
 .modal-close {
@@ -86,6 +91,7 @@
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* ✅ Prevents button from shrinking */
 }
 
 .modal-close:hover {
@@ -93,6 +99,176 @@
   color: #333;
 }
 
+.modal-close:active {
+  transform: scale(0.95);
+}
+
 .modal-body {
   padding: 24px;
+}
+
+/* ✅ Tablet Responsive */
+@media (max-width: 1024px) {
+  .modal-overlay {
+    padding: 14px;
+  }
+
+  .modal-content {
+    border-radius: 14px;
+    max-height: 92vh;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-size: 22px;
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    font-size: 28px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-small {
+    max-width: 380px;
+  }
+
+  .modal-medium {
+    max-width: 550px;
+  }
+
+  .modal-large {
+    max-width: 800px;
+  }
+}
+
+/* ✅ Mobile Responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end; /* ✅ Align to bottom on mobile for better UX */
+  }
+
+  .modal-content {
+    border-radius: 12px 12px 0 0; /* ✅ Rounded top corners only */
+    max-height: 95vh;
+    width: 100% !important; /* ✅ Full width on mobile */
+    max-width: 100% !important;
+    animation: slideUpMobile 0.3s ease;
+  }
+
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-header {
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+  }
+
+  .modal-close {
+    width: 36px; /* ✅ Larger touch target */
+    height: 36px;
+    font-size: 26px;
+  }
+
+  .modal-close:hover {
+    background: none; /* ✅ Disable hover on mobile */
+  }
+
+  .modal-close:active {
+    background: #f5f5f5;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+}
+
+/* ✅ Small Mobile */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0; /* ✅ No padding on very small screens */
+  }
+
+  .modal-content {
+    border-radius: 12px 12px 0 0;
+    max-height: 96vh;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .modal-close {
+    width: 34px;
+    height: 34px;
+    font-size: 24px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+}
+
+/* ✅ Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal-overlay {
+    align-items: center; /* ✅ Center on landscape */
+  }
+
+  .modal-content {
+    border-radius: 12px; /* ✅ All corners rounded */
+    max-height: 90vh;
+    width: 95% !important;
+    max-width: 700px !important;
+  }
+}
+
+/* ✅ Smooth scrolling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 0 16px 0;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* ✅ Mobile scrollbar */
+@media (max-width: 768px) {
+  .modal-content::-webkit-scrollbar {
+    width: 6px;
+  }
 }

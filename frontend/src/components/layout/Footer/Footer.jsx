@@ -7,10 +7,11 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-content">
         <p className="footer-text">
-          © {currentYear} Soap Shop Sales System. All rights reserved.
+          © {currentYear} Fadila Enterprise. All rights reserved.
         </p>
         <p className="footer-subtext">
-          Powered by React & MongoDB | Currency: Ghana Cedis (GH₵)
+          Powered by React & MongoDB | Currency: Ghana Cedis (GH₵) <br/>
+          Developed by Taudjudeen || 0539228560
         </p>
       </div>
     </footer>
