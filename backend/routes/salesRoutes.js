@@ -9,14 +9,15 @@ import {
 } from '../controllers/salesController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { managerOrCeo } from '../middleware/roleMiddleware.js';
+import { validateSaleInput } from '../middleware/validation.js';
 
 const router = express.Router();
 
-// All routes require authentication
+// ✅ All routes require authentication
 router.use(protect);
 
-// Sales routes
-router.post('/', managerOrCeo, recordSale);
+// ✅ Sales routes with validation
+router.post('/', managerOrCeo, validateSaleInput, recordSale);
 router.get('/', getSales);
 router.get('/my-sales', getMySales);
 router.get('/daily/:date', getDailySalesReport);

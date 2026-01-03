@@ -11,6 +11,14 @@ import Product from './models/Product.js';
 import Sale from './models/Sale.js';
 import { formatCedis } from './utils/calculateProfit.js';
 
+// ✅ Import security middleware
+import { 
+  helmetConfig, 
+  corsOptions,
+  generalLimiter, 
+  apiLimiter 
+} from './middleware/security.js';
+
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
@@ -21,10 +29,13 @@ import activityRoutes from './routes/activityRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ✅ SECURITY MIDDLEWARE
+app.use(helmetConfig);
+app.use(cors(corsOptions));
+
+// ✅ Body parsers with size limits
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Request logging
 app.use((req, res, next) => {
@@ -35,21 +46,25 @@ app.use((req, res, next) => {
 // Database connection
 connectDB();
 
-// Routes
+// ✅ Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
+
+// Routes with additional rate limiting
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/sales', salesRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/activities', activityRoutes);
+app.use('/api/products', generalLimiter, productRoutes);
+app.use('/api/sales', generalLimiter, salesRoutes);
+app.use('/api/reports', generalLimiter, reportRoutes);
+app.use('/api/activities', generalLimiter, activityRoutes);
 
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Soap Shop Sales System API - MongoDB',
-    version: '1.0.0',
+    message: 'Fadila Enterprise API - Secure & MongoDB',
+    version: '2.0.0',
     status: 'Running',
     database: 'MongoDB',
     currency: 'Ghana Cedis (GH₵)',
+    security: '🔒 Enhanced',
     endpoints: {
       auth: '/api/auth',
       products: '/api/products',
@@ -60,12 +75,20 @@ app.get('/', (req, res) => {
   });
 });
 
-// Error handling middleware
+// ✅ Enhanced Error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  
+  console.error('Error:', err.message);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Stack:', err.stack);
+  }
+  
   res.status(statusCode);
   res.json({
-    message: err.message,
+    message: process.env.NODE_ENV === 'production' 
+      ? 'An error occurred. Please try again later.' 
+      : err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack
   });
 });
@@ -97,7 +120,7 @@ cron.schedule('0 8 * * *', async () => {
       console.log('✅ All products are well-stocked');
     }
   } catch (error) {
-    console.error('Error checking stock levels:', error);
+    console.error('Error checking stock levels:', error.message);
   }
 });
 
@@ -115,7 +138,7 @@ cron.schedule('0 18 * * *', async () => {
         $group: {
           _id: null,
           transactions: { $sum: 1 },
-          revenue: { $sum: '$totalAmount' },
+          revenue: { $sum: '$finalAmount' },
           profit: { $sum: '$profit' },
           itemsSold: { $sum: '$quantitySold' }
         }
@@ -131,17 +154,18 @@ cron.schedule('0 18 * * *', async () => {
     console.log(`Revenue: ${formatCedis(result.revenue)}`);
     console.log(`Profit: ${formatCedis(result.profit)}\n`);
   } catch (error) {
-    console.error('Error generating daily summary:', error);
+    console.error('Error generating daily summary:', error.message);
   }
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log('\n🚀 ============================================');
-  console.log(`   SOAP SHOP SALES SYSTEM (MongoDB)`);
+  console.log(`   FADILA ENTERPRISE (MongoDB)`);
   console.log(`   Server running on port ${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   Currency: Ghana Cedis (GH₵)`);
+  console.log(`   Security: 🔒 ENHANCED`);
   console.log('   ============================================');
   console.log('\n📌 API Endpoints:');
   console.log(`   - Auth:      http://localhost:${PORT}/api/auth`);
@@ -149,6 +173,12 @@ app.listen(PORT, () => {
   console.log(`   - Sales:     http://localhost:${PORT}/api/sales`);
   console.log(`   - Reports:   http://localhost:${PORT}/api/reports`);
   console.log(`   - Activity:  http://localhost:${PORT}/api/activities`);
+  console.log('\n🛡️  Security Features:');
+  console.log('   - ✅ Rate Limiting (30 req/min, 5 login attempts)');
+  console.log('   - ✅ Input Validation (via validation middleware)');
+  console.log('   - ✅ CORS Protection');
+  console.log('   - ✅ Security Headers (Helmet)');
+  console.log('   - ✅ Request Size Limits (10kb)');
   console.log('\n⏰ Automated Tasks:');
   console.log('   - Low Stock Alerts: Daily at 8:00 AM');
   console.log('   - Sales Summary:    Daily at 6:00 PM');
