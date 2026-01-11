@@ -29,9 +29,46 @@ import activityRoutes from './routes/activityRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// ✅ ENHANCED CORS CONFIGURATION FOR PRODUCTION
+const productionCorsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://fadila-sales.vercel.app',
+      'https://fadila-sales-system.vercel.app',
+      /\.vercel\.app$/, // Allow all Vercel preview deployments
+      process.env.FRONTEND_URL // Add your custom domain if you have one
+    ].filter(Boolean); // Remove undefined values
+
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return allowedOrigin === origin;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️  CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600 // Cache preflight requests for 10 minutes
+};
+
 // ✅ SECURITY MIDDLEWARE
 app.use(helmetConfig);
-app.use(cors(corsOptions));
+app.use(cors(productionCorsOptions)); // Use production CORS config
 
 // ✅ Body parsers with size limits
 app.use(express.json({ limit: '10kb' }));
@@ -39,7 +76,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Request logging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || 'No origin'}`);
   next();
 });
 
@@ -72,6 +109,15 @@ app.get('/', (req, res) => {
       reports: '/api/reports',
       activities: '/api/activities'
     }
+  });
+});
+
+// Health check endpoint (useful for monitoring)
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
