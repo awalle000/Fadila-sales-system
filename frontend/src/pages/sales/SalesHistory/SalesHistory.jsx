@@ -14,6 +14,11 @@ const SalesHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  
+  // ✅ Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20); // Show 20 sales per page
+  
   const isCEO = user?.role === 'ceo';
 
   useEffect(() => {
@@ -22,6 +27,7 @@ const SalesHistory = () => {
 
   useEffect(() => {
     filterSales();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [sales, searchTerm, dateFilter]);
 
   const fetchSales = async () => {
@@ -71,6 +77,61 @@ const SalesHistory = () => {
     const totalItems = filteredSales.reduce((sum, sale) => sum + sale.quantitySold, 0);
 
     return { totalRevenue, totalProfit, totalItems };
+  };
+
+  // ✅ Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSales = filteredSales.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
+
+  // ✅ Pagination handlers
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) handlePageChange(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) handlePageChange(currentPage + 1);
+  };
+
+  // ✅ Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      // Show all pages if total is 5 or less
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show pages with ellipsis
+      if (currentPage <= 3) {
+        // Near the start
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        // Near the end
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        // In the middle
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
   };
 
   if (loading) {
@@ -165,6 +226,13 @@ const SalesHistory = () => {
         </div>
       </div>
 
+      {/* ✅ Showing results info */}
+      {filteredSales.length > 0 && (
+        <div className="results-info">
+          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSales.length)} of {filteredSales.length} sales
+        </div>
+      )}
+
       {/* Sales Table */}
       <div className="table-container">
         <table className="data-table">
@@ -182,8 +250,8 @@ const SalesHistory = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredSales.length > 0 ? (
-              filteredSales.map((sale) => (
+            {currentSales.length > 0 ? (
+              currentSales.map((sale) => (
                 <tr key={sale._id}>
                   <td className="date-cell">{formatDateTime(sale.saleDate)}</td>
                   <td className="product-name">{sale.productName}</td>
@@ -206,6 +274,43 @@ const SalesHistory = () => {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Pagination Controls */}
+      {filteredSales.length > itemsPerPage && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={handlePrevious}
+            disabled={currentPage === 1}
+          >
+            ← Previous
+          </button>
+
+          <div className="pagination-numbers">
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button
+            className="pagination-btn"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

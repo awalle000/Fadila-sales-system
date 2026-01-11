@@ -11,6 +11,11 @@ const StockOverview = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  
+  // ✅ Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20); // Show 20 items per page
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +24,7 @@ const StockOverview = () => {
 
   useEffect(() => {
     filterProducts();
+    setCurrentPage(1); // Reset to first page when filter changes
   }, [products, filter]);
 
   const fetchProducts = async () => {
@@ -65,6 +71,54 @@ const StockOverview = () => {
     if (product.quantityInStock === 0) return '🔴 Out of Stock';
     if (product.quantityInStock <= product.lowStockThreshold) return '🟡 Low Stock';
     return '🟢 In Stock';
+  };
+
+  // ✅ Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  // ✅ Pagination handlers
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) handlePageChange(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) handlePageChange(currentPage + 1);
+  };
+
+  // ✅ Generate page numbers
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
   };
 
   if (loading) {
@@ -149,6 +203,13 @@ const StockOverview = () => {
         </button>
       </div>
 
+      {/* ✅ Showing results info */}
+      {filteredProducts.length > 0 && (
+        <div className="results-info">
+          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredProducts.length)} of {filteredProducts.length} products
+        </div>
+      )}
+
       {/* Stock Table */}
       <div className="table-container">
         <table className="data-table">
@@ -165,8 +226,8 @@ const StockOverview = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
+            {currentProducts.length > 0 ? (
+              currentProducts.map((product) => (
                 <tr key={product._id} className={getStockStatus(product)}>
                   <td className="product-name">{product.name}</td>
                   <td>{product.category}</td>
@@ -199,6 +260,43 @@ const StockOverview = () => {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Pagination Controls */}
+      {filteredProducts.length > itemsPerPage && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={handlePrevious}
+            disabled={currentPage === 1}
+          >
+            ← Previous
+          </button>
+
+          <div className="pagination-numbers">
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button
+            className="pagination-btn"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 };
