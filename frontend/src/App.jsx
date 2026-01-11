@@ -9,6 +9,8 @@ import Navbar from './components/layout/Navbar/Navbar';
 import Sidebar from './components/layout/Sidebar/Sidebar';
 import Footer from './components/layout/Footer/Footer';
 import './App.css';
+import InstallPWA from './components/common/InstallPWA/InstallPWA';
+import OnlineStatus from './components/common/OnlineStatus/OnlineStatus';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -53,6 +55,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <OnlineStatus />
+        <InstallPWA />
         <ProductProvider>
           <SalesProvider>
             <AppContent />
