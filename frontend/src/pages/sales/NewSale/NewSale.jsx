@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { getAllProducts } from '../../../services/productService';
 import { recordSale } from '../../../services/salesService';
+import { createInvoice as createInvoiceAPI } from '../../../services/invoiceService'; // NEW
 import { calculateProfit, calculateTotalRevenue, formatCedis } from '../../../utils/calculateProfit';
 import Button from '../../../components/common/Button/Button';
 import Loader from '../../../components/common/Loader/Loader';
@@ -19,7 +20,8 @@ const NewSale = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+  const [paymentType, setPaymentType] = useState('cash'); // NEW: cash | credit
+  const [customerName, setCustomerName] = useState('Walk-in'); // NEW
   const [cart, setCart] = useState([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
@@ -156,10 +158,16 @@ const NewSale = () => {
       return;
     }
 
+    // If credit, prompt for confirmation (optional)
+    if (paymentType === 'credit' && (!customerName || customerName.trim() === '')) {
+      toast.error('Please provide customer name for credit sales');
+      return;
+    }
+
     setSaving(true);
 
     try {
-      // Record each item as a separate sale
+      // Record each item as a separate sale (existing behaviour)
       const salePromises = cart.map(item =>
         recordSale({
           productId: item.productId,
@@ -173,21 +181,55 @@ const NewSale = () => {
 
       // Prepare receipt data
       const totals = getCartTotals();
-      setReceiptData({
+      const newReceiptData = {
         items: cart,
         totals,
         saleDate: new Date(),
         soldBy: user.name,
         receiptNumber: `RCP-${Date.now()}`
-      });
+      };
 
+      setReceiptData(newReceiptData);
       setShowReceipt(true);
+
+      // If credit -> create invoice on backend
+      if (paymentType === 'credit') {
+        try {
+          const payload = {
+            receiptNumber: `INV-${Date.now()}`,
+            items: cart.map(it => ({
+              product: it.productId,
+              productName: it.productName,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              discount: it.discount,
+              finalAmount: it.finalAmount,
+              unit: it.unit
+            })),
+            totals,
+            saleDate: new Date().toISOString(),
+            soldBy: user._id,
+            sellerName: user.name,
+            customerName: customerName || 'Walk-in',
+            paymentType: 'credit',
+            payments: [],
+            notes: `Credit sale recorded by ${user.name}`
+          };
+
+          await createInvoiceAPI(payload);
+          toast.success('Credit invoice recorded on server. Manager/CEO can set due date and accept partial payments.');
+        } catch (err) {
+          console.error('Invoice API error', err);
+          toast.error('Sale recorded but failed to create invoice on server (check logs).');
+        }
+      } else {
+        toast.success('Sale completed successfully!');
+      }
+
       setCart([]); // Clear cart
       fetchProducts(); // Refresh product stock
-      
-      toast.success('Sale completed successfully!');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to complete sale');
+      toast.error(error.response?.data?.message || error.message || 'Failed to complete sale');
     } finally {
       setSaving(false);
     }
@@ -240,6 +282,36 @@ const NewSale = () => {
         <div className="sale-form-container">
           <h2 className="section-title">Add Products</h2>
           
+          {/* Payment Type */}
+          <div className="input-group">
+            <label htmlFor="paymentType" className="input-label">
+              Payment Type
+            </label>
+            <select id="paymentType" value={paymentType} onChange={(e) => setPaymentType(e.target.value)} className="input-field">
+              <option value="cash">Cash (Paid immediately)</option>
+              <option value="credit">Credit (Customer to pay later)</option>
+            </select>
+            <small className="help-text">Choose if the customer pays now or buys on credit.</small>
+          </div>
+
+          {/* Customer (for credit) */}
+          {paymentType === 'credit' && (
+            <div className="input-group">
+              <label htmlFor="customerName" className="input-label">
+                Customer Name <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="customerName"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Customer name (for credit records)"
+                className="input-field"
+              />
+              <small className="help-text">Enter customer name so managers can follow up.</small>
+            </div>
+          )}
+
           {/* Search Bar */}
           <div className="input-group">
             <label htmlFor="search" className="input-label">

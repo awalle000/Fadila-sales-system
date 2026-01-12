@@ -69,6 +69,13 @@ const Sidebar = () => {
       icon: '👥',
       path: '/users',
       roles: ['ceo']
+    },
+    // NEW: Invoices
+    {
+      title: 'Invoices',
+      icon: '🧾',
+      path: '/invoices',
+      roles: ['ceo', 'manager']
     }
   ];
 

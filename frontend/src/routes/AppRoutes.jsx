@@ -32,6 +32,9 @@ import ActivityLogs from '../pages/activity/ActivityLogs/ActivityLogs';
 // Users
 import UserManagement from '../pages/users/UserManagement/UserManagement';
 
+// Invoices (NEW)
+import Invoices from '../pages/invoices/Invoices';
+
 const AppRoutes = () => {
   const { user } = useAuth();
 
@@ -161,6 +164,16 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={['ceo']}>
             <UserManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Invoices - CEO & Manager */}
+      <Route
+        path="/invoices"
+        element={
+          <ProtectedRoute allowedRoles={['ceo', 'manager']}>
+            <Invoices />
           </ProtectedRoute>
         }
       />

@@ -25,6 +25,7 @@ import productRoutes from './routes/productRoutes.js';
 import salesRoutes from './routes/salesRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
+import invoiceRoutes from './routes/invoiceRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -92,6 +93,7 @@ app.use('/api/products', generalLimiter, productRoutes);
 app.use('/api/sales', generalLimiter, salesRoutes);
 app.use('/api/reports', generalLimiter, reportRoutes);
 app.use('/api/activities', generalLimiter, activityRoutes);
+app.use('/api/invoices', generalLimiter, invoiceRoutes);
 
 // Root route
 app.get('/', (req, res) => {
