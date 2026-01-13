@@ -1,4 +1,3 @@
-javascript name=frontend/src/pages/activity/ActivityLogs/ActivityLogs.jsx url=https://github.com/awalle000/Fadila-sales-system/blob/main/frontend/src/pages/activity/ActivityLogs/ActivityLogs.jsx
 import { useState, useEffect } from 'react';
 import { getActivityLogs, getLoginLogs } from '../../../services/salesService';
 import { formatDateTime } from '../../../utils/formatDate';
