@@ -149,7 +149,7 @@ const Invoices = () => {
           <div class="receipt">
             <div class="header">
               <div>
-                <div class="brand">Fadila Enterprise</div>
+                <div class="brand">Fadila Impact Enterprise</div>
                 <div class="small">Sales Invoice</div>
               </div>
               <div class="meta">
@@ -205,7 +205,7 @@ const Invoices = () => {
             </div>
 
             <div style="margin-top:28px; text-align:center; color:#6b7280; font-size:0.9rem;">
-              Thank you for your business!
+              Thank you for doing business with us!
             </div>
           </div>
         </body>

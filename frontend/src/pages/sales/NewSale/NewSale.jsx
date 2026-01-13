@@ -582,7 +582,7 @@ const NewSale = () => {
               </div>
 
               <div className="footer">
-                <p>Thank you for your business!</p>
+                <p>Thank you for doing business with us!</p>
                 <p>Visit us again soon 😊</p>
               </div>
             </div>

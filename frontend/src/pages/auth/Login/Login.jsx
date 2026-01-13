@@ -59,7 +59,7 @@ const Login = () => {
       <div className="login-card">
         <div className="login-header">
           <div className="login-icon">🧼</div>
-          <h1 className="login-title">Fadila Enterprise</h1>
+          <h1 className="login-title">Fadila Impact Enterprise</h1>
           <p className="login-subtitle">Sales Management Platform</p>
         </div>
 
@@ -100,11 +100,11 @@ const Login = () => {
 
         <div className="login-footer">
           <div className="demo-credentials">
-            <h4>Demo Credentials:</h4>
+            <h4>Version 1.0.0</h4>
             {/* <p><strong>CEO:</strong> ceo@soapshop.com / Admin@123</p> */}
             <p className="login-hint">Create Manager accounts after logging in</p>
           </div>
-          <p className="login-version">Version 1.0.0 | Currency: GH₵</p>
+          <p className="login-version">Develop by Taudjudeen || 0539228560</p>
         </div>
       </div>
     </div>
