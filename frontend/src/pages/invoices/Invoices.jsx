@@ -4,7 +4,12 @@ import Button from '../../components/common/Button/Button';
 import './Invoices.css';
 import { format as formatDateFn } from 'date-fns';
 import { formatCedis } from '../../utils/calculateProfit';
-import { getInvoices, updateInvoice as updateInvoiceAPI, recordInvoicePayment as recordPaymentAPI, deleteInvoice as deleteInvoiceAPI } from '../../services/invoiceService';
+import {
+  getInvoices,
+  updateInvoice as updateInvoiceAPI,
+  recordInvoicePayment as recordPaymentAPI,
+  deleteInvoice as deleteInvoiceAPI
+} from '../../services/invoiceService';
 
 const Invoices = () => {
   const { user } = useAuth();
@@ -83,6 +88,154 @@ const Invoices = () => {
     }
   };
 
+  // --- Print invoice ---
+  const generateReceiptHTML = (inv) => {
+    const seller = inv.sellerName || inv.soldBy?.name || 'Unknown';
+    const date = formatDateFn(new Date(inv.saleDate), 'PPpp');
+    const itemsHTML = inv.items.map(it => {
+      return `
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eee;">
+            <strong>${it.productName}</strong><br/>
+            <small>${it.quantity} ${it.unit} × ${formatCedis(it.unitPrice)}</small>
+            ${it.discount > 0 ? `<div style="color:#ef4444; font-size:0.9em">Discount: -${formatCedis(it.discount)}</div>` : ''}
+          </td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eee; text-align:right; vertical-align:top;">
+            ${formatCedis(it.finalAmount)}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const paymentsHTML = (inv.payments || []).map(p => {
+      return `
+        <tr>
+          <td style="padding:4px 8px; border-bottom:1px solid #f6f6f6;">
+            ${formatDateFn(new Date(p.date), 'PPpp')} ${p.note ? ` - ${p.note}` : ''}
+          </td>
+          <td style="padding:4px 8px; border-bottom:1px solid #f6f6f6; text-align:right;">
+            ${formatCedis(p.amount)}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const dueDateLine = inv.dueDate ? `<div>Due Date: ${formatDateFn(new Date(inv.dueDate), 'PP')}</div>` : '';
+
+    return `
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Invoice - ${inv.receiptNumber}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#111827; padding:20px; background:#f6f8fb; }
+            .receipt { max-width:720px; margin:0 auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 6px 20px rgba(2,6,23,0.08); }
+            .header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+            .brand { font-weight:900; color:#111827; font-size:1.1rem; letter-spacing:0.4px; }
+            .meta { text-align:right; color:#6b7280; font-size:0.9rem; }
+            table { width:100%; border-collapse:collapse; margin-top:16px; }
+            tfoot td { font-weight:800; font-size:1.05rem; }
+            .totals { margin-top:12px; width:100%; max-width:420px; float:right; }
+            .small { color:#6b7280; font-size:0.9rem; }
+            .center { text-align:center; }
+            @media print {
+              body { background: #fff; }
+              .receipt { box-shadow:none; border-radius:0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt">
+            <div class="header">
+              <div>
+                <div class="brand">Fadila Enterprise</div>
+                <div class="small">Sales Invoice</div>
+              </div>
+              <div class="meta">
+                <div>Invoice #: <strong>${inv.receiptNumber}</strong></div>
+                <div>${date}</div>
+                <div>Sold by: ${seller}</div>
+                ${dueDateLine}
+              </div>
+            </div>
+
+            <table>
+              <tbody>
+                ${itemsHTML}
+              </tbody>
+            </table>
+
+            <div style="clear:both"></div>
+
+            <div style="margin-top:18px; display:flex; justify-content:flex-end;">
+              <table class="totals" style="border-collapse:collapse;">
+                <tbody>
+                  <tr>
+                    <td style="padding:6px 8px; color:#6b7280;">Subtotal:</td>
+                    <td style="padding:6px 8px; text-align:right;">${formatCedis(inv.totals.totalAmount)}</td>
+                  </tr>
+                  ${inv.totals.totalDiscount > 0 ? `
+                    <tr>
+                      <td style="padding:6px 8px; color:#ef4444;">Discount:</td>
+                      <td style="padding:6px 8px; text-align:right; color:#ef4444;">-${formatCedis(inv.totals.totalDiscount)}</td>
+                    </tr>
+                  ` : ''}
+                  <tr>
+                    <td style="padding:6px 8px;">Remaining:</td>
+                    <td style="padding:6px 8px; text-align:right;">${formatCedis(inv.remainingBalance)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 8px; font-weight:800;">TOTAL:</td>
+                    <td style="padding:10px 8px; text-align:right; font-weight:800; color:#111827;">${formatCedis(inv.totals.finalAmount)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="clear:both"></div>
+
+            <div style="margin-top:20px;">
+              <h4 style="margin:0 0 8px 0;">Payments</h4>
+              <table style="width:100%; border-collapse:collapse;">
+                <tbody>
+                  ${paymentsHTML || '<tr><td style="padding:8px 0; color:#6b7280;">No payments yet</td><td></td></tr>'}
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top:28px; text-align:center; color:#6b7280; font-size:0.9rem;">
+              Thank you for your business!
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
+  const handlePrintInvoice = (inv) => {
+    try {
+      const html = generateReceiptHTML(inv);
+      const printWindow = window.open('', '_blank', 'width=800,height=800');
+      if (!printWindow) {
+        alert('Please allow popups for this site to print invoices.');
+        return;
+      }
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      // Wait for content to load before printing
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    } catch (err) {
+      console.error('Print error', err);
+      alert('Failed to open print dialog.');
+    }
+  };
+  // --- End print invoice ---
+
   return (
     <div className="page-container invoices-page">
       <div className="page-header">
@@ -145,6 +298,9 @@ const Invoices = () => {
                 <div className="inv-actions">
                   <div className="big-amount">{formatCedis(selectedInvoice.totals.finalAmount)}</div>
                   <div className={`status-badge ${selectedInvoice.status}`}>{selectedInvoice.status}</div>
+                  <div style={{ marginTop: 8 }}>
+                    <Button variant="primary" onClick={() => handlePrintInvoice(selectedInvoice)}>🖨️ Print Invoice</Button>
+                  </div>
                 </div>
               </div>
 
