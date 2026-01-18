@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { getDashboardOverview, getMySales } from '../../../services/salesService';
@@ -17,12 +17,19 @@ const ManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // 🔐 Prevent duplicate API calls (React StrictMode / HMR safe)
+  const hasFetched = useRef(false);
+
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
     setLoading(true);
+
     try {
       const [overview, sales, lowStock] = await Promise.all([
         getDashboardOverview(),
@@ -30,12 +37,11 @@ const ManagerDashboard = () => {
         getLowStockProducts()
       ]);
 
-      setDashboardData(overview);
-      setMySales(sales.slice(0, 5)); // Show only last 5 sales
-      setLowStockProducts(lowStock);
+      setDashboardData(overview || {});
+      setMySales((sales || []).slice(0, 5)); // last 5 sales only
+      setLowStockProducts(lowStock || []);
     } catch (error) {
-      // Only show error for actual server errors, not empty data
-      if (error.response && error.response.status !== 404) {
+      if (error?.response?.status !== 404) {
         toast.error('Failed to load dashboard data');
         console.error('Dashboard error:', error);
       }
@@ -52,7 +58,9 @@ const ManagerDashboard = () => {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">👋 Welcome, {user?.name}!</h1>
-        <p className="page-subtitle">Manager Dashboard - Track your sales performance</p>
+        <p className="page-subtitle">
+          Manager Dashboard - Track your sales performance
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -61,7 +69,9 @@ const ManagerDashboard = () => {
           <div className="stat-icon">📅</div>
           <div className="stat-content">
             <h3>Today's Sales</h3>
-            <div className="stat-value">{dashboardData?.today?.revenue || 'GH₵ 0.00'}</div>
+            <div className="stat-value">
+              {dashboardData?.today?.revenue || 'GH₵ 0.00'}
+            </div>
             <div className="stat-meta">
               <span>{dashboardData?.today?.transactions || 0} transactions</span>
               <span>{dashboardData?.today?.itemsSold || 0} items sold</span>
@@ -73,7 +83,9 @@ const ManagerDashboard = () => {
           <div className="stat-icon">💰</div>
           <div className="stat-content">
             <h3>Today's Revenue</h3>
-            <div className="stat-value">{dashboardData?.today?.revenue || 'GH₵ 0.00'}</div>
+            <div className="stat-value">
+              {dashboardData?.today?.revenue || 'GH₵ 0.00'}
+            </div>
             <div className="stat-meta">
               <span>Total revenue for today</span>
             </div>
@@ -84,9 +96,13 @@ const ManagerDashboard = () => {
           <div className="stat-icon">📆</div>
           <div className="stat-content">
             <h3>This Month</h3>
-            <div className="stat-value">{dashboardData?.thisMonth?.revenue || 'GH₵ 0.00'}</div>
+            <div className="stat-value">
+              {dashboardData?.thisMonth?.revenue || 'GH₵ 0.00'}
+            </div>
             <div className="stat-meta">
-              <span>{dashboardData?.thisMonth?.transactions || 0} transactions</span>
+              <span>
+                {dashboardData?.thisMonth?.transactions || 0} transactions
+              </span>
             </div>
           </div>
         </div>
@@ -95,9 +111,13 @@ const ManagerDashboard = () => {
           <div className="stat-icon">⚠️</div>
           <div className="stat-content">
             <h3>Stock Alerts</h3>
-            <div className="stat-value">{dashboardData?.alerts?.lowStockCount || 0}</div>
+            <div className="stat-value">
+              {dashboardData?.alerts?.lowStockCount || 0}
+            </div>
             <div className="stat-meta">
-              <span>{dashboardData?.alerts?.criticalCount || 0} critical alerts</span>
+              <span>
+                {dashboardData?.alerts?.criticalCount || 0} critical alerts
+              </span>
             </div>
           </div>
         </div>
@@ -117,7 +137,10 @@ const ManagerDashboard = () => {
       <div className="dashboard-section">
         <div className="section-header">
           <h2>📝 My Recent Sales</h2>
-          <button className="btn-view-all" onClick={() => navigate('/sales/history')}>
+          <button
+            className="btn-view-all"
+            onClick={() => navigate('/sales/history')}
+          >
             View All
           </button>
         </div>
@@ -139,13 +162,15 @@ const ManagerDashboard = () => {
                     <td>{formatDate(sale.saleDate)}</td>
                     <td className="product-name">{sale.productName}</td>
                     <td>{sale.quantitySold}</td>
-                    <td className="revenue">GH₵ {sale.totalAmount?.toFixed(2)}</td>
+                    <td className="revenue">
+                      GH₵ {sale.totalAmount?.toFixed(2)}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td colSpan="4" className="no-data">
-                    📝 No sales recorded yet. Make your first sale to get started!
+                    📝 No sales recorded yet.
                   </td>
                 </tr>
               )}
@@ -157,20 +182,19 @@ const ManagerDashboard = () => {
       {/* Quick Actions */}
       <div className="quick-actions">
         <button className="action-card" onClick={() => navigate('/sales/new')}>
-          <div className="action-icon">💰</div>
-          <div className="action-text">New Sale</div>
+          💰 New Sale
         </button>
         <button className="action-card" onClick={() => navigate('/products')}>
-          <div className="action-icon">📦</div>
-          <div className="action-text">View Products</div>
+          📦 View Products
         </button>
         <button className="action-card" onClick={() => navigate('/inventory')}>
-          <div className="action-icon">📋</div>
-          <div className="action-text">Stock Overview</div>
+          📋 Stock Overview
         </button>
-        <button className="action-card" onClick={() => navigate('/reports/daily')}>
-          <div className="action-icon">📊</div>
-          <div className="action-text">Daily Report</div>
+        <button
+          className="action-card"
+          onClick={() => navigate('/reports/daily')}
+        >
+          📊 Daily Report
         </button>
       </div>
     </div>

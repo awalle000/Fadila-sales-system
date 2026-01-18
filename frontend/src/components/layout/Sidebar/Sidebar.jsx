@@ -1,114 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isCEO = user?.role === 'ceo';
 
   const menuItems = [
-    {
-      title: 'Dashboard',
-      icon: '📊',
-      path: isCEO ? '/ceo-dashboard' : '/manager-dashboard',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Products',
-      icon: '📦',
-      path: '/products',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'New Sale',
-      icon: '💰',
-      path: '/sales/new',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Sales History',
-      icon: '📝',
-      path: '/sales/history',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Stock Overview',
-      icon: '📋',
-      path: '/inventory',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Daily Report',
-      icon: '📅',
-      path: '/reports/daily',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Monthly Report',
-      icon: '📆',
-      path: '/reports/monthly',
-      roles: ['ceo', 'manager']
-    },
-    {
-      title: 'Profit/Loss',
-      icon: '💹',
-      path: '/reports/profit-loss',
-      roles: ['ceo']
-    },
-    {
-      title: 'Activity Logs',
-      icon: '🔍',
-      path: '/activity-logs',
-      roles: ['ceo']
-    },
-    {
-      title: 'User Management',
-      icon: '👥',
-      path: '/users',
-      roles: ['ceo']
-    },
-    // NEW: Invoices
-    {
-      title: 'Invoices',
-      icon: '🧾',
-      path: '/invoices',
-      roles: ['ceo', 'manager']
-    }
+    { title: 'Dashboard', icon: '📊', path: isCEO ? '/ceo-dashboard' : '/manager-dashboard', roles: ['ceo','manager'] },
+    { title: 'Products', icon: '📦', path: '/products', roles: ['ceo','manager'] },
+    { title: 'New Sale', icon: '💰', path: '/sales/new', roles: ['ceo','manager'] },
+    { title: 'Sales History', icon: '📝', path: '/sales/history', roles: ['ceo','manager'] },
+    { title: 'Stock Overview', icon: '📋', path: '/inventory', roles: ['ceo','manager'] },
+    { title: 'Daily Report', icon: '📅', path: '/reports/daily', roles: ['ceo','manager'] },
+    { title: 'Monthly Report', icon: '📆', path: '/reports/monthly', roles: ['ceo','manager'] },
+    { title: 'Profit/Loss', icon: '💹', path: '/reports/profit-loss', roles: ['ceo'] },
+    { title: 'Activity Logs', icon: '🔍', path: '/activity-logs', roles: ['ceo'] },
+    { title: 'User Management', icon: '👥', path: '/users', roles: ['ceo'] },
+    { title: 'Invoices', icon: '🧾', path: '/invoices', roles: ['ceo','manager'] },
   ];
 
-  const visibleMenuItems = menuItems.filter(item =>
-    item.roles.includes(user?.role)
-  );
+  if (loading || !user) return null;
 
-  // ✅ Close sidebar when route changes (mobile)
-  const handleLinkClick = () => {
+  const visibleMenuItems = menuItems.filter(item => item.roles.includes(user.role));
+
+  // Close sidebar on mobile when navigating
+  useEffect(() => {
     if (window.innerWidth <= 768) {
       setSidebarOpen(false);
     }
-  };
-
-  // ✅ Toggle sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  // ✅ Close sidebar when clicking overlay
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
+  }, [location.pathname]);
 
   return (
     <>
-      {/* ✅ Sidebar */}
+      {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h2 className="sidebar-title">Menu</h2>
-          <div className="sidebar-role-badge">
-            {user?.role?.toUpperCase()}
-          </div>
+          <div className="sidebar-role-badge">{user.role.toUpperCase()}</div>
         </div>
 
         <nav className="sidebar-nav">
@@ -116,10 +48,8 @@ const Sidebar = () => {
             <NavLink
               key={index}
               to={item.path}
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
-              }
-              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)}
             >
               <span className="sidebar-icon">{item.icon}</span>
               <span className="sidebar-text">{item.title}</span>
@@ -128,25 +58,23 @@ const Sidebar = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-version">
-            Version 1.0.0
-          </div>
+          <div className="sidebar-version">Version 1.0.0</div>
         </div>
       </aside>
 
-      {/* ✅ Mobile Overlay */}
-      <div 
-        className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`}
-        onClick={closeSidebar}
-        aria-hidden="true"
-      />
+      {/* Overlay: only render in DOM when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay active"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {/* ✅ Mobile Toggle Button */}
-      <button 
+      {/* Toggle Button */}
+      <button
         className="sidebar-toggle"
-        onClick={toggleSidebar}
+        onClick={() => setSidebarOpen(prev => !prev)}
         aria-label="Toggle sidebar menu"
-        aria-expanded={sidebarOpen}
       >
         {sidebarOpen ? '✕' : '☰'}
       </button>

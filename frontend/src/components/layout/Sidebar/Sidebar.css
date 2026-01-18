@@ -10,8 +10,30 @@
   overflow-y: auto;
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  pointer-events: auto;
 }
 
+/* ---------- MOBILE BEHAVIOR ---------- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: -280px;
+    height: calc(100vh - 60px);
+    width: 280px;
+    z-index: 1000;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    pointer-events: none; /* block only when open */
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.open {
+    left: 0;
+    pointer-events: auto;
+  }
+}
+
+/* ---------- HEADER ---------- */
 .sidebar-header {
   padding: 24px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -21,20 +43,17 @@
   margin: 0 0 12px 0;
   font-size: 18px;
   font-weight: 700;
-  color: white;
 }
 
 .sidebar-role-badge {
-  display: inline-block;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
+/* ---------- LINKS ---------- */
 .sidebar-nav {
   flex: 1;
   padding: 16px 0;
@@ -49,8 +68,6 @@
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .sidebar-link:hover {
@@ -60,38 +77,25 @@
 }
 
 .sidebar-link.active {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
-  color: white;
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.2), transparent);
   border-left-color: #667eea;
-  font-weight: 600;
+  color: white;
 }
 
+/* ---------- ICONS ---------- */
 .sidebar-icon {
   font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 24px;
-  min-width: 24px;
 }
 
-.sidebar-text {
-  flex: 1;
-}
-
+/* ---------- FOOTER ---------- */
 .sidebar-footer {
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
-.sidebar-version {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 500;
-}
-
-/* ✅ Mobile Menu Toggle Button */
+/* ---------- TOGGLE BUTTON ---------- */
 .sidebar-toggle {
   display: none;
   position: fixed;
@@ -99,158 +103,36 @@
   right: 20px;
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   border: none;
   border-radius: 50%;
   color: white;
   font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  z-index: 998;
-  transition: all 0.3s ease;
+  z-index: 1002;
 }
 
-.sidebar-toggle:active {
-  transform: scale(0.95);
-}
-
-/* ✅ Mobile Overlay */
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 998;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.active {
-  opacity: 1;
-}
-
-/* Scrollbar styling */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* ✅ Tablet Responsive */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 220px;
-  }
-
-  .sidebar-header {
-    padding: 20px 16px;
-  }
-
-  .sidebar-title {
-    font-size: 16px;
-  }
-
-  .sidebar-link {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-
-  .sidebar-icon {
-    font-size: 18px;
-    width: 22px;
-    min-width: 22px;
-  }
-}
-
-/* ✅ Mobile Responsive */
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -280px;
-    top: 60px; /* Adjusted for smaller mobile header */
-    height: calc(100vh - 60px);
-    width: 280px;
-    z-index: 999;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
-  }
-
-  .sidebar.open {
-    left: 0;
-  }
-
   .sidebar-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-
-  .sidebar-overlay {
-    display: block;
-  }
-
-  .sidebar-header {
-    padding: 20px;
-  }
-
-  .sidebar-link {
-    padding: 16px 20px; /* ✅ Larger touch targets */
-    font-size: 15px;
-  }
-
-  .sidebar-icon {
-    font-size: 22px;
-    width: 26px;
-    min-width: 26px;
-  }
-
-  .sidebar-footer {
-    padding: 16px;
-  }
 }
 
-/* ✅ Small Mobile */
-@media (max-width: 480px) {
-  .sidebar {
-    width: 260px;
-    left: -260px;
-  }
+/* ---------- OVERLAY ---------- */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* below sidebar and toggle */
+  opacity: 0;
+  pointer-events: none; /* invisible overlay won't block clicks */
+  transition: opacity 0.3s ease;
+}
 
-  .sidebar-header {
-    padding: 16px;
-  }
-
-  .sidebar-title {
-    font-size: 15px;
-    margin-bottom: 8px;
-  }
-
-  .sidebar-role-badge {
-    font-size: 10px;
-    padding: 4px 10px;
-  }
-
-  .sidebar-link {
-    padding: 14px 16px;
-  }
-
-  .sidebar-toggle {
-    width: 52px;
-    height: 52px;
-    bottom: 16px;
-    right: 16px;
-  }
+/* 🔑 Only active overlay blocks clicks */
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
 }
